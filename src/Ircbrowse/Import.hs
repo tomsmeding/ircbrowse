@@ -155,7 +155,8 @@ updateChannelIndex _ channel = do
            ,showChanInt channel
            ,lastOrigin)
   io $ putStrLn $  "Updating event count for " ++ showChan channel ++ " ..."
-  void $ exec ["update event_count set \"count\" = (select count(*) from event where channel = ?) where channel = ?;"]
+  void $ exec ["delete from event_count where channel = ?;"] (Only (showChanInt channel))
+  void $ exec ["insert into event_count (count, channel) values ((select count(*) from event where channel = ?), ?);"]
              (showChanInt channel
              ,showChanInt channel)
 

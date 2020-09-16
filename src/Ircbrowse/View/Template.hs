@@ -55,9 +55,11 @@ footer =
       p !. "muted credit" $ do
         a ! href "http://ircbrowse.tomsmeding.com" $ "IRC Browse"
         " by "
-        a ! href "http://chrisdone.com" $ "Chris Done"
+        a ! href "https://chrisdone.com" $ "Chris Done"
+        ", run by "
+        a ! href "https://tomsmeding.com" $ "Tom Smeding"
         " | "
-        a ! href "https://github.com/chrisdone/ircbrowse" $ "Source code"
+        a ! href "https://github.com/tomsmeding/ircbrowse" $ "Source code"
         " | "
         a ! href "http://haskell.org/" $ "Haskell"
 

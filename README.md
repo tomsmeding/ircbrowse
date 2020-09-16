@@ -1,7 +1,7 @@
 # ircbrowse
 
 IRC Browse is a web service for browsing IRC logs. The
-[IRC Browse site is here](http://ircbrowse.net/).
+[IRC Browse site is here](http://ircbrowse.tomsmeding.com/).
 
 ## Adding a channel
 

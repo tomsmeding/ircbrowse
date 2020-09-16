@@ -15,7 +15,7 @@ import           Ircbrowse.System
 import           Ircbrowse.Types
 import           Ircbrowse.Types.Import
 
-import           Control.Exception (try,IOException)
+import           Control.Exception (try,IOException,catchJust)
 import           Data.IORef
 import           Data.IRC.CLog.Parse hiding (Config,parseLog)
 import           Data.IRC.Znc.Parse hiding (Config)
@@ -24,6 +24,7 @@ import qualified Data.Text.IO as T
 import           Snap.App
 import           Snap.App.Cache
 import           Snap.App.Migrate
+import           System.IO.Error (isDoesNotExistError)
 
 -- -- | Do a batch import of files in the current directory.
 -- batchImport :: Config -> Channel -> Pool -> IO ()
@@ -64,9 +65,9 @@ importRecent quick config pool mThisChan = do
           importChannel lastdate config pool (addDays 1 (utctDay lastdate)) channel False
         putStrLn $ "Imported channel " ++ showChan channel
       _ -> do
-        logs <- fmap (sort) (getDirectoryContents (configLogDir config))
-        case find (isInfixOf (prettyChan channel ++ "_")) logs of
-          Nothing -> error $ "Unable to get last import time, or find the first log of this channel: " ++ showChan channel
+        logs <- fmap (sort) (catchJust (\e -> if isDoesNotExistError e then Just () else Nothing) (getDirectoryContents (configLogDir config </> prettyChan channel)) (const (return [])))
+        case find (isInfixOf "-") logs of
+          Nothing -> putStrLn $ "Unable to get last import time, or find the first log of this channel: " ++ showChan channel
           Just fp ->
             case parseFileTime fp of
               Nothing -> error $ "Found log of this channel in the log dir, but couldn't parse date from the filename: " ++ fp
@@ -86,8 +87,7 @@ importRecent quick config pool mThisChan = do
     --runDB config () pool $ generateData
 
 parseFileTime :: ParseTime t => [Char] -> Maybe t
-parseFileTime (drop 1 . dropWhile (/='_') -> date) =
-  parseTime defaultTimeLocale "%Y-%m-%d.log" date
+parseFileTime = parseTime defaultTimeLocale "%Y-%m-%d.log"
 
 -- | Import the channel into the database of the given date.
 importChannel :: UTCTime -> Config -> Pool -> Day -> Channel -> Bool -> IO ()

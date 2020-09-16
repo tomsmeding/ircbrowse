@@ -3,6 +3,10 @@
 IRC Browse is a web service for browsing IRC logs. The
 [IRC Browse site is here](http://ircbrowse.tomsmeding.com/).
 
+IRC Browse was originally built and maintained by
+[Chris Done](https://github.com/chrisdone), but this fork is now maintained(?)
+by [Tom Smeding](https://github.com/tomsmeding).
+
 ## Adding a channel
 
 Add to

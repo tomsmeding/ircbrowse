@@ -83,8 +83,8 @@ importRecent quick config pool mThisChan = do
   unless quick $ do
     putStrLn "Running ANALYZE ..."
     runDB config () pool $ void $ exec ["ANALYZE event_order_index"] ()
-    --putStrLn "Running data regeneration ..."
-    --runDB config () pool $ generateData
+    putStrLn "Running data regeneration ..."
+    runDB config () pool $ generateData
 
 parseFileTime :: ParseTime t => [Char] -> Maybe t
 parseFileTime = parseTime defaultTimeLocale "%Y-%m-%d.log"

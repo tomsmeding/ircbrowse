@@ -170,7 +170,7 @@ allPdfs uri channel lines' = do
               td $ do
                 a ! A.href (toValue url) ! target "_blank" $ toHtml url
                 " — "
-                a ! A.href (toValue ("http://ircbrowse.net/browse/" ++ showChan channel ++ "?q=" ++ url)) $
+                a ! A.href (toValue ("http://ircbrowse.tomsmeding.com/browse/" ++ showChan channel ++ "?q=" ++ url)) $
                   "Search results"
                 " — Context"; (if length urls' == 1 then "" else "s"); ": "
                 forM_ (take 30 (zip [1..] urls')) $ \(j,(i',t,_)) -> do

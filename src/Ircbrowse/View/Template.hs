@@ -63,7 +63,7 @@ footer =
   div !# "footer" $
     div !. "container" $ do
       p !. "muted credit" $ do
-        a ! href "http://ircbrowse.net" $ "IRC Browse"
+        a ! href "http://ircbrowse.tomsmeding.com" $ "IRC Browse"
         " by "
         a ! href "http://chrisdone.com" $ "Chris Done"
         " | "

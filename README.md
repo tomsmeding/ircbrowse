@@ -22,8 +22,12 @@ Create the PostgreSQL database:
 
 Update the database to the latest migration:
 
-    $ stack exec -- ircbrowse ircbrowse.conf --create-version
+    $ stack exec -- ircbrowse ircbrowse.conf create-version
 
 Run:
 
     $ stack exec -- ircbrowse ircbrowse.conf
+
+Periodically update the database with new events from logs:
+
+    $ stack exec -- ircbrowse ircbrowse.conf complete-import

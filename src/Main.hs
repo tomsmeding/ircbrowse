@@ -33,6 +33,8 @@ main = do
       db $ migrate False versions
       db $ generateData
       clearCache config
+    "create-version" -> do
+      db $ migrate True versions
     _ -> do
       db $ migrate False versions
       runServer config pool

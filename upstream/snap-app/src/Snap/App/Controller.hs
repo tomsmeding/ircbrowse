@@ -88,7 +88,7 @@ getStringMaybe name = do
 getPagination :: AppConfig c => String -> Controller c s PN
 getPagination name = do
   p <- getInteger (fromString (name ++ "_page")) 1
-  limit <- getInteger (fromString (name ++ "_per_page")) 35
+  limit <- getInteger (fromString (name ++ "_per_page")) 100
   uri <- getMyURI
   let pag = Pagination { pnCurrentPage = max 1 p
                        , pnPerPage = max 1 (min 100 limit)

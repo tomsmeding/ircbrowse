@@ -49,14 +49,15 @@ versions = zip [1..] ms where
             ex ["alter table event rename number to id;"]
             ex ["create index event_id_idx on event(id);"]
         ,do ex ["alter table event add constraint event_unique_message unique (network,channel,timestamp,nick,text)"]
-        ,do ex ["create table conversation_by_year (year int not null unique, lines int not null);"]
-            ex ["insert into conversation_by_year select date_part('year',timestamp),count(*) from event where type in ('talk','act') group by date_part('year',timestamp) order by 1;"]
-            ex ["create table general_activity_by_year (year int not null unique, lines int not null);"]
-            ex ["insert into general_activity_by_year select date_part('year',timestamp),count(*) from event group by date_part('year',timestamp) order by 1;"]
+        ,do ex ["create table conversation_by_year (year int not null unique, lines int not null, channel int not null);"]
+            ex ["insert into conversation_by_year select date_part('year',timestamp),count(*),channel from event where type in ('talk','act') group by date_part('year',timestamp), channel order by 1;"]
+            ex ["create table general_activity_by_year (year int not null unique, lines int not null, channel int not null);"]
+            ex ["insert into general_activity_by_year select date_part('year',timestamp),count(*),channel from event group by date_part('year',timestamp), channel order by 1;"]
         ,do ex ["create table nick_to_nick (id serial primary key, nick1 text not null, nick2 text not null, count integer not null default 0);"]
             ex ["create table nick_to_nick_tmp (id serial primary key, nick1 text not null, nick2 text not null, count integer not null default 0);"]
          -- Wed Mar 13 20:40:10 CET 2013
          -- Here's where I start supporting multiple channels.
+         -- Though the conversation_by_year and general_activity_by_year tables creation statements above have been updated to support multiple channels already... - Tom Smeding
         ,do ex ["insert into channel values ('freenode','lisp');"]
             ex ["create index event_channel_idx on event(channel);"]
             ex ["alter table event_count add channel integer"]

@@ -45,7 +45,7 @@ browser :: Bool
         -> PN
         -> Maybe Text
         -> Html
-browser search title' channel extra uri _ events pn q' =
+browser _search title' channel extra uri _ events pn q' =
   template "browse" title' mempty $ do
     channelNav channel
     containerFluid $ do

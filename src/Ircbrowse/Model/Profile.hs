@@ -8,7 +8,6 @@ import Ircbrowse.Data
 import Ircbrowse.Types
 import Ircbrowse.Types.Import
 
-import Data.Monoid
 import Data.Text (Text)
 import Snap.App
 

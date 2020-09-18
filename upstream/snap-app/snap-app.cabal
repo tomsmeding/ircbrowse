@@ -11,7 +11,7 @@ build-type:          Simple
 cabal-version:       >=1.8
 
 library
-  ghc-options:       -O2 -Wall -fno-warn-type-defaults
+  ghc-options:       -O2 -Wall
   hs-source-dirs:    src
   exposed-modules:   Snap.App, Snap.App.Types, Snap.App.Controller, Snap.App.Model, Snap.App.Migrate,
                      Snap.App.Cache, Snap.App.XML, Snap.App.RSS,

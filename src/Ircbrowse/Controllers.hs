@@ -113,7 +113,7 @@ browseGivenDate = do
   month <- getText "month"
   day <- getText "day"
   let datetext = year <> "/" <> month <> "/" <> day
-  case parseTime defaultTimeLocale "%Y/%m/%d" (T.unpack datetext) of
+  case parseTimeM True defaultTimeLocale "%Y/%m/%d" (T.unpack datetext) of
     Nothing -> return ()
     Just day -> browseSomeDay False day datetext
 
@@ -214,7 +214,7 @@ getChannelMaybe = do
 getTimestamp :: Controller c s (Maybe UTCTime)
 getTimestamp = do
   string <- getStringMaybe "timestamp"
-  return $ string >>= parseTime defaultTimeLocale "%s"
+  return $ string >>= parseTimeM True defaultTimeLocale "%s"
 
 getSearchText :: ByteString -> Controller c s (Maybe Text)
 getSearchText key = do

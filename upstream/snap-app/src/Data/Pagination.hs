@@ -30,12 +30,8 @@ instance Default Pagination where
 
 -- | Get the page count of the pagination results.
 pnPageCount :: Pagination -> Integer
-pnPageCount Pagination{..} = max 1 $
-  if total/perpage > fromIntegral (round (total/perpage))
-     then round (total/perpage) + 1
-     else round (total/perpage)
-  where total = fromIntegral pnTotal
-        perpage = fromIntegral pnPerPage
+pnPageCount Pagination{..} = max 1 (pnTotal `ceilDiv` pnPerPage)
+  where ceilDiv n d = (n + d - 1) `div` d
 
 -- | Add the current page of the pagination from the current URI.
 addCurrentPNData :: URI -> Pagination -> Pagination

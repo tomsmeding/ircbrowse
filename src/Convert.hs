@@ -11,7 +11,6 @@ import           Control.Exception
 import           Control.Monad
 import           Data.ByteString.Char8 (ByteString)
 import qualified Data.ByteString.Char8 as S
-import           Data.Monoid
 import           Data.Time
 import           System.Environment
 import           System.Process

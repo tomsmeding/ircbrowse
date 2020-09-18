@@ -1,5 +1,3 @@
-{-# OPTIONS -Wall #-}
-
 module Control.Monad.IO where
 
 import Control.Monad.Trans

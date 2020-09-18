@@ -4,7 +4,6 @@
 
 module Ircbrowse.View.NickColour where
 
-import           Data.Monoid
 import           Data.Maybe
 import           Data.Text (Text)
 import qualified Data.Text as T

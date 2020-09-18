@@ -1,5 +1,3 @@
-{-# OPTIONS -Wall -fno-warn-name-shadowing #-}
-
 -- | Caching of Blaze HTML pages caching.
 
 module Snap.App.Cache
@@ -19,7 +17,7 @@ import qualified Data.Text.Lazy.IO as T
 import           Snap.App
 import           System.Directory
 import           System.FilePath
-import           Text.Blaze
+import           Text.Blaze hiding (text)
 import           Text.Blaze.Html.Renderer.Text
 
 -- | A key for the cache.
@@ -32,8 +30,8 @@ class CacheDir config where
 
 -- | Cache conditionally.
 cacheIf :: (CacheDir c,Key key) => Bool -> key -> Controller c s (Maybe Markup) -> Controller c s (Maybe Text)
-cacheIf pred key generate =
-  if pred
+cacheIf predicate key generate =
+  if predicate
      then cache key generate
      else fmap (fmap renderHtml) generate
 
@@ -46,21 +44,21 @@ cache key generate = do
   exists <- io $ doesFileExist cachePath
   if exists
      then do text <- io $ T.readFile cachePath
-     	     return (Just text)
+             return (Just text)
      else do text <- fmap (fmap renderHtml) generate
-     	     case text of
-	       Just text' -> do io $ createDirectoryIfMissing True tmpdir
+             case text of
+               Just text' -> do io $ createDirectoryIfMissing True tmpdir
                                 io $ T.writeFile cachePath text'
-	       	    	        return text
+                                return text
                Nothing -> return text
 
 -- | Clear the whole cache.
 clearCache :: CacheDir c => c -> IO ()
 clearCache config = do
-  files <- getDirectoryContents dir
-  forM_ (filter (not . all (=='.')) files) $ removeFile . (dir </>)
+  files <- getDirectoryContents cacheDir
+  forM_ (filter (not . all (=='.')) files) $ removeFile . (cacheDir </>)
 
-  where dir = getCacheDir config
+  where cacheDir = getCacheDir config
 
 -- | Reset an item in the cache.
 resetCache :: (CacheDir c,Key key) => key -> Controller c s ()

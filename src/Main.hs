@@ -3,7 +3,6 @@
 
 module Main where
 
-import Data.List
 import Data.Maybe
 import Ircbrowse.Config
 import Ircbrowse.Import

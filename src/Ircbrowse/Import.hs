@@ -87,7 +87,7 @@ importRecent quick config pool mThisChan = do
     runDB config () pool $ generateData
 
 parseFileTime :: ParseTime t => [Char] -> Maybe t
-parseFileTime = parseTime defaultTimeLocale "%Y-%m-%d.log"
+parseFileTime = parseTimeM False defaultTimeLocale "%Y-%m-%d.log"
 
 -- | Import the channel into the database of the given date.
 importChannel :: UTCTime -> Config -> Pool -> Day -> Channel -> Bool -> IO ()
@@ -164,9 +164,10 @@ updateChannelIndex _ channel = do
 importFile :: UTCTime -> Channel -> Config -> FilePath -> Bool -> Model c s ()
 importFile last channel config path frst = do
    events'' <- liftIO $ parseLog ircbrowseConfig path
-   let events' = filter (\case
-                            e@EventAt{} -> True
-                            NoParse "" -> False) events''
+   events' <- flip filterM events'' $ \case
+       EventAt{} -> return True
+       NoParse err -> do io $ putStrLn ("Failed to parse line: " ++ T.unpack err)
+                         return False
    io $ putStrLn "Importing the following events:"
    let events | frst = events'
               | otherwise = dropWhile (not.(\case (EventAt t _) -> t > last

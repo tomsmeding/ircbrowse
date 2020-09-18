@@ -1,4 +1,3 @@
-{-# OPTIONS -Wall #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Text.Blaze.Html5.Extra where

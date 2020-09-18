@@ -10,7 +10,7 @@ import Ircbrowse.View
 import Ircbrowse.View.Template
 
 import Data.Aeson
-import Data.Aeson.Encode
+import Data.Aeson.Text
 import Data.Text (Text)
 import Data.Text.Lazy.Builder
 

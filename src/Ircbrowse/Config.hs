@@ -1,5 +1,3 @@
-{-# OPTIONS -Wall -fno-warn-missing-signatures -fno-warn-name-shadowing #-}
-
 -- | Load the configuration file.
 
 module Ircbrowse.Config (getConfig) where

@@ -4,8 +4,8 @@ module Data.IRC.Znc.Parse where
 
 import           Control.Applicative
 import qualified Control.Exception as Ex
-import           Data.Attoparsec (Parser)
-import qualified Data.Attoparsec as P
+import           Data.Attoparsec.ByteString (Parser)
+import qualified Data.Attoparsec.ByteString as P
 import           Data.ByteString (ByteString)
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as B8
@@ -116,7 +116,7 @@ safeRead _ = Nothing
 getDay :: ParseTime t => FilePath -> t
 getDay fp = case Path.splitFileName fp of
   (_,(drop 1 . dropWhile (/='_')) -> date) ->
-    case Time.parseTime Time.defaultTimeLocale "%Y-%m-%d.log" date of
+    case Time.parseTimeM False Time.defaultTimeLocale "%Y-%m-%d.log" date of
       Just day -> day
       Nothing -> error ("cannot parse date from filename: " ++ date)
 

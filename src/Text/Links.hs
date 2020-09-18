@@ -7,7 +7,6 @@ module Text.Links
   where
 
 import           Data.Maybe
-import           Data.Monoid
 import           Data.Text (Text)
 import qualified Data.Text as T
 import           Network.URI

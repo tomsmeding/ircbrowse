@@ -10,7 +10,7 @@ import Ircbrowse.View
 
 import Control.Arrow
 import Data.Aeson
-import Data.Aeson.Encode
+import Data.Aeson.Text
 import Data.Text.Lazy.Builder
 
 cloud :: String -> (Int,Int) -> Int -> Int -> [(String,Integer)] -> Html

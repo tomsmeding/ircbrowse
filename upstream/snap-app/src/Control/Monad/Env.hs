@@ -1,4 +1,3 @@
-{-# OPTIONS -Wall #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 -- | Abstraction of environment functions (could be state, could be

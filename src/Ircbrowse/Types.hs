@@ -7,14 +7,12 @@ import Ircbrowse.Data
 import Ircbrowse.Types.Import
 import Ircbrowse.Monads
 
-import Control.Applicative
 import Data.Text
 import Database.PostgreSQL.Simple
 import Database.PostgreSQL.Simple.FromRow
 import Network.Mail.Mime (Address)
 import Snap.App.Cache
 import Snap.App.Types
-import Data.Time
 
 -- | Site-wide configuration.
 data Config = Config

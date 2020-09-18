@@ -1,5 +1,4 @@
 {-# LANGUAGE BangPatterns #-}
-{-# OPTIONS -Wall #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 -- | Controller routing/handling.

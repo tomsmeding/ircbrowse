@@ -1,4 +1,3 @@
-{-# OPTIONS -Wall #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Data.Maybe.Extra where

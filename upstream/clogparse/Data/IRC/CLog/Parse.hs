@@ -1,5 +1,4 @@
-{-# LANGUAGE
-    PatternGuards #-}
+{-# LANGUAGE PatternGuards #-}
 
 -- | Parse events from @clog@ output, such as the files
 -- at <http://tunes.org/~nef/logs/haskell/>.
@@ -26,7 +25,7 @@ import Data.List
 import Control.Applicative
 
 import qualified Data.Foldable            as F
-import qualified Data.Attoparsec          as P
+import qualified Data.Attoparsec.ByteString as P
 import qualified Data.ByteString          as B
 import qualified Data.ByteString.Char8    as B8
 import qualified Data.Time                as Time
@@ -35,7 +34,6 @@ import qualified Data.Text.Encoding       as T
 import qualified Data.Text.Encoding.Error as T
 import qualified System.FilePath          as Path
 import qualified System.Environment       as Env
-import qualified System.IO.Error          as IOError
 import qualified Control.Exception        as Ex
 import qualified Data.Time.LocalTime.TimeZone.Series as Zone
 import qualified Data.Time.LocalTime.TimeZone.Olson  as Zone

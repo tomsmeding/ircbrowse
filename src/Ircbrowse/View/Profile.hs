@@ -91,7 +91,7 @@ profileSections nick showrecent ns@NickStats{..} =
                       p $ do
                         radarChart (map (\(h,avg,_,_) -> (show h,avg)) nickHours)
         makeLink eid t =
-          concat ["http://ircbrowse.tomsmeding.com/browse/haskell?id="
+          concat ["https://ircbrowse.tomsmeding.com/browse/haskell?id="
                  ,show eid
                  ,"&timestamp="
                  ,secs

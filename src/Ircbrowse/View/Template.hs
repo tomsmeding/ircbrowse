@@ -53,7 +53,7 @@ footer =
   div !# "footer" $
     div !. "container" $ do
       p !. "muted credit" $ do
-        a ! href "http://ircbrowse.tomsmeding.com" $ "IRC Browse"
+        a ! href "https://ircbrowse.tomsmeding.com" $ "IRC Browse"
         " by "
         a ! href "https://chrisdone.com" $ "Chris Done"
         ", run by "
@@ -61,7 +61,7 @@ footer =
         " | "
         a ! href "https://github.com/tomsmeding/ircbrowse" $ "Source code"
         " | "
-        a ! href "http://haskell.org/" $ "Haskell"
+        a ! href "https://www.haskell.org/" $ "Haskell"
 
 mainHeading :: Html -> Html
 mainHeading inner = h1 $ do

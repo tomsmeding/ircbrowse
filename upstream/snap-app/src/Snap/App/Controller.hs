@@ -99,10 +99,10 @@ getPagination name = do
 getMyURI :: AppConfig c => Controller c s URI
 getMyURI = do
   domain <- env (getConfigDomain . controllerStateConfig)
-  result <- fmap (parseURI . (("http://" ++ domain) ++) . toString . rqURI)
+  result <- fmap (parseURI . (("https://" ++ domain) ++) . toString . rqURI)
                  getRequest
   case result of
-    Nothing -> case parseURI ("http://" ++ domain) of
+    Nothing -> case parseURI ("https://" ++ domain) of
       Nothing -> error $ "Unable to parse my own domain! It's this: " ++ domain
       Just d -> return d
     Just d -> return d

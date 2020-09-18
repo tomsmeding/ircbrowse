@@ -179,12 +179,12 @@ quotes = do
   return ()
   qs <- model $ getRecentQuotes 30
   outputRSS "IRCBrowse Quotes"
-            "http://ircbrowse.tomsmeding.com/quotes.rss"
+            "https://ircbrowse.tomsmeding.com/quotes.rss"
             (map (\(eid,date,title) -> (date,title,"",T.pack (makeLink eid date)))
                  qs)
 
   where makeLink eid t =
-          concat ["http://ircbrowse.tomsmeding.com/browse/haskell?id="
+          concat ["https://ircbrowse.tomsmeding.com/browse/haskell?id="
                  ,show eid
                  ,"&timestamp="
                  ,secs

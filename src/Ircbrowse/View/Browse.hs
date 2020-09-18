@@ -55,7 +55,7 @@ browser _search title' channel extra uri _ events pn q' =
          then noResults
          else paginatedTable channel uri events pn
     footer
-    script ! src "http://code.jquery.com/jquery-2.1.1.min.js" $ mempty
+    script ! src "https://code.jquery.com/jquery-2.1.1.min.js" $ mempty
     script ! src "/js/link.js" $ mempty
 
 selection :: Channel -> Text -> [Event] -> URI -> Html
@@ -82,7 +82,7 @@ browseDay channel current date events uri = do
     footer
   when (current == "recent") $
     do script ! src "/js/recent.js" $ mempty
-  script ! src "http://code.jquery.com/jquery-2.1.1.min.js" $ mempty
+  script ! src "https://code.jquery.com/jquery-2.1.1.min.js" $ mempty
   script ! src "/js/link.js" $ mempty
 
 noResults :: Html
@@ -170,7 +170,7 @@ allPdfs uri channel lines' = do
               td $ do
                 a ! A.href (toValue url) ! target "_blank" $ toHtml url
                 " — "
-                a ! A.href (toValue ("http://ircbrowse.tomsmeding.com/browse/" ++ showChan channel ++ "?q=" ++ url)) $
+                a ! A.href (toValue ("https://ircbrowse.tomsmeding.com/browse/" ++ showChan channel ++ "?q=" ++ url)) $
                   "Search results"
                 " — Context"; (if length urls' == 1 then "" else "s"); ": "
                 forM_ (take 30 (zip [1..] urls')) $ \(j,(i',t,_)) -> do

@@ -14,7 +14,7 @@ barChart values = p $ barChartBy (450,200) values
 barChartBy :: (Show a,Integral a) => (Int,Int) -> [(String, a)] -> Html
 barChartBy (w,h) values = img ! src (toValue url)
 
-  where url = "http://chart.apis.google.com/chart?" ++
+  where url = "https://chart.apis.google.com/chart?" ++
               "chxl=0:|" ++ intercalate "|" xlabels ++
               "&chxt=x,y&chd=t:" ++
               intercalate "," datas ++
@@ -30,7 +30,7 @@ barChartBy (w,h) values = img ! src (toValue url)
 radarChart :: (Show a,Integral a) => [(String, a)] -> Html
 radarChart values = img ! src (toValue url)
 
-  where url = "http://chart.apis.google.com/chart?" ++
+  where url = "https://chart.apis.google.com/chart?" ++
               "chxl=0:|" ++ intercalate "|" xlabels ++
               "&chxt=x&chd=t:" ++
               intercalate "," (datas ++ take 1 datas) ++

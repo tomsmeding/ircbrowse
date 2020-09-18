@@ -1,9 +1,12 @@
-resolver: lts-3.15
+resolver: lts-16.15
 packages:
 - .
 - upstream/clogparse
 - upstream/snap-app
 
-extra-deps: []
+extra-deps:
+- cgi-3001.5.0.0@sha256:3d1193a328d5f627a021a0ef3927c1ae41dd341e32dba612fed52d0e3a6df056,2990
+- multipart-0.2.0@sha256:b8770e3ff6089be4dd089a8250894b31287cca671f3d258190a505f9351fa8a9,1084
+
 flags: {}
 extra-package-dbs: []

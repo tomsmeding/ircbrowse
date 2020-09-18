@@ -20,11 +20,10 @@ module Snap.App.Model
   where
 
 import           Control.Concurrent
-import           Control.Monad.CatchIO as E
+import           Control.Exception.Lifted (bracket)
 import           Control.Monad.Env (env)
 import           Control.Monad.Reader
-import           Data.ByteString (ByteString)
-import qualified Data.ByteString.Char8 as S8
+import           Control.Monad.Trans.Control (MonadBaseControl)
 import           Data.String
 import qualified Database.PostgreSQL.Simple as DB
 import           Database.PostgreSQL.Simple hiding (query)
@@ -101,13 +100,13 @@ pconnect (Pool var) = liftIO $ do
 
 -- | Restore a connection to the pool.
 restore :: MonadIO m => Pool -> Connection -> m ()
-restore (Pool var) conn = liftIO $ do
+restore (Pool _var) conn = liftIO $ do
   close conn
 
 -- | Use the connection pool.
-withPoolConnection :: (MonadCatchIO m,MonadIO m) => Pool -> (Connection -> m a) -> m ()
+withPoolConnection :: (MonadBaseControl IO m,MonadIO m) => Pool -> (Connection -> m a) -> m ()
 withPoolConnection pool m = do
-  _ <- E.bracket (pconnect pool) (restore pool) m
+  _ <- bracket (pconnect pool) (restore pool) m
   return ()
 
 -- | A connection pool.

@@ -3,6 +3,7 @@
 {-# OPTIONS -Wall #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 -- | Model-view-controller app types.
 
@@ -15,11 +16,12 @@ module Snap.App.Types
        ,AppLiftModel(..))
        where
 
-import Control.Applicative        (Applicative,Alternative)
+import Control.Applicative        (Alternative)
 import Control.Monad              (MonadPlus)
-import Control.Monad.Catch        (MonadCatchIO)
+import Control.Monad.Base         (MonadBase)
 import Control.Monad.Reader       (ReaderT,MonadReader)
 import Control.Monad.Trans        (MonadIO)
+import Control.Monad.Trans.Control(MonadBaseControl)
 import Database.PostgreSQL.Simple (Connection)
 
 import Snap.Core                  (Snap,MonadSnap)
@@ -42,7 +44,8 @@ newtype Controller config state a = Controller {
              ,MonadSnap
              ,MonadIO
              ,MonadPlus
-             ,MonadCatchIO)
+             ,MonadBase IO
+             ,MonadBaseControl IO)
 
 -- | The state accessible to the model (just DB connection).
 data ModelState config state = ModelState {

@@ -16,25 +16,23 @@ getConfig conf = do
   contents <- readFile conf
   let config = do
         c <- readstring emptyCP contents
-        [pghost,pgport,pguser,pgpass,pgdb]
-          <- mapM (get c "POSTGRESQL")
-                  ["host","port","user","pass","db"]
-        [domain,cache]
-          <- mapM (get c "WEB")
-                  ["domain","cache"]
-        [admin,siteaddy]
-          <- mapM (get c "ADDRESSES")
-	     	  ["admin","site_addy"]
-        [ldir]
-          <- mapM (get c "IMPORT")
-                  ["log_dir"]
+        pghost <- get c "POSTGRESQL" "host"
+        pgport <- get c "POSTGRESQL" "port"
+        pguser <- get c "POSTGRESQL" "user"
+        pgpass <- get c "POSTGRESQL" "pass"
+        pgdb   <- get c "POSTGRESQL" "db"
+        domain <- get c "WEB" "domain"
+        cache  <- get c "WEB" "cache"
+        admin    <- get c "ADDRESSES" "admin"
+        siteaddy <- get c "ADDRESSES" "site_addy"
+        ldir <- get c "IMPORT" "log_dir"
 
         return Config {
            configPostgres = ConnectInfo pghost (read pgport) pguser pgpass pgdb
          , configDomain = domain
-	 , configAdmin = Address Nothing (T.pack admin)
-	 , configSiteAddy = Address Nothing (T.pack siteaddy)
-	 , configCacheDir = cache
+         , configAdmin = Address Nothing (T.pack admin)
+         , configSiteAddy = Address Nothing (T.pack siteaddy)
+         , configCacheDir = cache
          , configLogDir = ldir
          }
   case config of

@@ -18,7 +18,6 @@ library
                      Data.Pagination, Text.Blaze.Extra, Text.Blaze.Pagination,
                      Control.Monad.Env, Data.Monoid.Operator,
                      Network.URI.Params
-  other-modules:     Control.Monad.Catch
   build-depends:     base >= 4 && <5,
                      snap-core,
                      network-uri,
@@ -30,7 +29,7 @@ library
                      text,
                      utf8-string,
                      bytestring,
-                     MonadCatchIO-transformers,
+                     exceptions,
                      cgi,
                      data-default,
                      filepath,
@@ -38,4 +37,8 @@ library
                      feed,
                      xml,
                      old-locale,
-                     time
+                     time,
+                     monad-control,
+                     transformers-base,
+                     lifted-base,
+                     xml-types

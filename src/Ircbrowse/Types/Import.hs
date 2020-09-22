@@ -14,7 +14,7 @@ data Channel
 --  | FSharp
 --  | Ghcjs
 --  | HaskellBeginners
---  | HLedger
+  | HLedger
 --  | Typelevel
 --  | Scalaz
 --  | Shapeless
@@ -44,7 +44,7 @@ prettyChan = \case
 --  FSharp -> "##fsharp"
 --  Ghcjs -> "#ghcjs"
 --  HaskellBeginners -> "#haskell-beginners"
---  HLedger -> "#hledger"
+  HLedger -> "#hledger"
 --  Typelevel -> "#typelevel"
 --  Scalaz -> "#scalaz"
 --  Shapeless -> "#shapeless"
@@ -73,7 +73,7 @@ showChan = \case
 --  FSharp -> "fsharp"
 --  Ghcjs -> "ghcjs"
 --  HaskellBeginners -> "haskell-beginners"
---  HLedger -> "hledger"
+  HLedger -> "hledger"
 --  Typelevel -> "typelevel"
 --  Scalaz -> "scalaz"
 --  Shapeless -> "shapeless"
@@ -101,7 +101,7 @@ showChanInt = \case
 --  FSharp -> 8
 --  Ghcjs -> 9
 --  HaskellBeginners -> 10
---  HLedger -> 11
+  HLedger -> 11
 --  Typelevel -> 12
 --  Scalaz -> 13
 --  Shapeless -> 14
@@ -131,7 +131,7 @@ parseChan = \case
 --  "cakeml" -> Just CakeML
 --  "fsharp" -> Just FSharp
 --  "ghcjs" -> Just Ghcjs
---  "hledger" -> Just HLedger
+  "hledger" -> Just HLedger
 --  "typelevel" -> Just Typelevel
 --  "scalaz" -> Just Scalaz
 --  "shapeless" -> Just Shapeless
@@ -160,7 +160,7 @@ idxNum = \case
 --  FSharp -> 8000
 --  Ghcjs -> 9000
 --  HaskellBeginners -> 10000
---  HLedger -> 11000
+  HLedger -> 11000
 --  Typelevel -> 12000
 --  Scalaz -> 13000
 --  Shapeless -> 14000

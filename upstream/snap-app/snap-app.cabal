@@ -29,16 +29,13 @@ library
                      text,
                      utf8-string,
                      bytestring,
-                     exceptions,
                      cgi,
                      data-default,
                      filepath,
                      directory,
                      feed,
                      xml,
-                     old-locale,
                      time,
                      monad-control,
                      transformers-base,
-                     lifted-base,
-                     xml-types
+                     lifted-base

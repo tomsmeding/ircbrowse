@@ -24,7 +24,6 @@ executable ircbrowse
                      blaze-markup,
                      clogparse,
                      random,
-                     curl,
                      time,
                      snap-core,
                      snap-server,
@@ -34,10 +33,7 @@ executable ircbrowse
                      postgresql-simple,
                      ConfigFile,
                      mtl,
-                     network,
                      network-uri,
-                     cgi,
-                     old-locale,
                      directory,
                      bytestring,
                      filepath,
@@ -47,12 +43,10 @@ executable ircbrowse
                      safe,
                      HUnit,
                      aeson,
-                     containers,
                      timezone-olson,
                      timezone-series,
                      attoparsec,
-                     split,
-                     cgi
+                     split
   other-modules:
     Control.Monad.IO
     Data.IRC.Znc.Parse

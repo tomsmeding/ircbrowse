@@ -1,0 +1,22 @@
+cradle:
+  multi:
+    - path: "./src"
+      config:
+        cradle:
+          cabal:
+            component: "exe:ircbrowse"
+    - path: "./nixos-convert"
+      config:
+        cradle:
+          cabal:
+            component: "exe:nixos-convert"
+    - path: "./upstream/snap-app"
+      config:
+        cradle:
+          cabal:
+            component: "lib:snap-app"
+    - path: "./upstream/clogparse"
+      config:
+        cradle:
+          cabal:
+            component: "lib:clogparse"

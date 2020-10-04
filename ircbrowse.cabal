@@ -13,7 +13,7 @@ executable nixos-convert
   main-is: Convert.hs
   ghc-options: -O2 -Wall -threaded
   build-depends: base, time, process, async, bytestring
-  hs-source-dirs: src
+  hs-source-dirs: nixos-convert
 
 executable ircbrowse
   main-is:           Main.hs

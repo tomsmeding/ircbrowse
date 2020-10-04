@@ -2,7 +2,6 @@
 
 module Snap.App.RSS where
 
-import           Data.Maybe (fromJust)
 import           Data.Text (Text)
 import qualified Data.Text as T
 import           Data.Time
@@ -13,7 +12,11 @@ import           Text.RSS.Syntax
 
 -- | Output the given XML element.
 outputRSS :: Text -> Text -> [(UTCTime,Text,Text,Text)] -> Controller c s ()
-outputRSS title link = writeLazyText . fromJust . textFeed . makeFeed title link
+outputRSS title link items =
+    case textFeed (makeFeed title link items) of
+        Just res -> writeLazyText res
+        Nothing -> do modifyResponse (setResponseCode 500)
+                      writeText (T.pack "Error building RSS feed")
 
 -- | Make a simple RSS feed.
 makeFeed :: Text -> Text -> [(UTCTime,Text,Text,Text)] -> Feed

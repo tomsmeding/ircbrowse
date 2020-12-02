@@ -46,7 +46,8 @@ executable ircbrowse
                      timezone-olson,
                      timezone-series,
                      attoparsec,
-                     split
+                     split,
+                     vector
   other-modules:
     Control.Monad.IO
     Data.IRC.Znc.Parse

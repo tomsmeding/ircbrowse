@@ -1,6 +1,12 @@
 {-# LANGUAGE LambdaCase #-}
 
-module Ircbrowse.Types.Import where
+module Ircbrowse.Types.Import (
+    Channel(Haskell),
+    prettyChan, showChan, showChanInt, parseChan, idxNum
+) where
+
+import Data.List (find)
+import qualified Data.Vector as V
 
 -- | Possible supported channels.
 data Channel
@@ -10,7 +16,7 @@ data Channel
 --  | Diagrams
 --  | Tasty
 --  | HaskellDistributed
---  | CakeML
+
 --  | FSharp
 --  | Ghcjs
 --  | HaskellBeginners
@@ -18,161 +24,84 @@ data Channel
 --  | Typelevel
 --  | Scalaz
 --  | Shapeless
---  | ProjectM36
 --  | Purescript
 --  | HaskellCN
 --  | ReflexFrp
 --  | HaskellIdeEngine
 --  | HaskellStack
 --  | Snowdrift
---  | Servant
 --  | Ghc
 --  | Hackage
+--  | Servant
+--  | CakeML
 --  | LibReviews
-  deriving (Enum)
+--  | ProjectM36
+  deriving (Eq, Enum, Bounded)
+
+data ChanInfo =
+    ChanInfo { ciPretty :: String
+             , ciShow :: String
+             , ciInt :: Int
+             , ciIdxNum :: Int }
+
+infoList :: [(Channel, ChanInfo)]
+infoList =
+    [(Haskell, ChanInfo "#haskell" "haskell" 1 1000)
+    -- ,(Lisp, ChanInfo "#lisp" "lisp" 2 2000)
+    -- ,(HaskellGame, ChanInfo "#haskell-game" "haskell-game" 3 3000)
+    -- ,(Diagrams, ChanInfo "#diagrams" "diagrams" 4 4000)
+    -- ,(Tasty, ChanInfo "#tasty" "tasty" 5 5000)
+    -- ,(HaskellDistributed, ChanInfo "#haskell-distributed" "haskell-distributed" 6 6000)
+
+    -- ,(FSharp, ChanInfo "##fsharp" "fsharp" 8 8000)
+    -- ,(Ghcjs, ChanInfo "#ghcjs" "ghcjs" 9 9000)
+    -- ,(HaskellBeginners, ChanInfo "#haskell-beginners" "haskell-beginners" 10 10000)
+    ,(HLedger, ChanInfo "#hledger" "hledger" 11 11000)
+    -- ,(Typelevel, ChanInfo "#typelevel" "typelevel" 12 12000)
+    -- ,(Scalaz, ChanInfo "#scalaz" "scalaz" 13 13000)
+    -- ,(Shapeless, ChanInfo "#shapeless" "shapeless" 14 14000)
+    -- ,(Purescript, ChanInfo "#purescript" "purescript" 15 15000)
+    -- ,(HaskellCN, ChanInfo "#haskell-cn" "haskell-cn" 16 16000)
+    -- ,(ReflexFrp, ChanInfo "#reflex-frp" "reflex-frp" 17 17000)
+    -- ,(HaskellIdeEngine, ChanInfo "#haskell-ide-engine" "haskell-ide-engine" 18 18000)
+    -- ,(HaskellStack, ChanInfo "#haskell-stack" "haskell-stack" 19 19000)
+    -- ,(Snowdrift, ChanInfo "#snowdrift" "snowdrift" 20 20000)
+    -- ,(Ghc, ChanInfo "#ghc" "ghc" 21 21000)
+    -- ,(Hackage, ChanInfo "#hackage" "hackage" 22 22000)
+    -- ,(Servant, ChanInfo "#servant" "servant" 23 23000)
+    -- ,(CakeML, ChanInfo "#cakeml" "cakeml" 24 24000)
+    -- ,(LibReviews, ChanInfo "#lib.reviews" "lib.reviews" 25 25000)
+    -- ,(ProjectM36, ChanInfo "#project-m36" "project-m36" 26 26000)
+    ]
+
+infoTable :: V.Vector ChanInfo
+infoTable =
+    let firstChannel = minBound :: Channel
+        lastChannel  = maxBound :: Channel
+        numChannels = fromEnum lastChannel - fromEnum firstChannel + 1
+    in if all id [length infoList == numChannels
+                 ,map fst infoList == [firstChannel..lastChannel]]  -- also requires sorted
+           then V.fromListN numChannels (map snd infoList)
+           else error "Invalid infoList in Import.hs"
+
+lookupInfo :: Channel -> ChanInfo
+lookupInfo ch = infoTable V.! fromEnum ch
 
 -- | Pretty print a channel in a human-representation.
 prettyChan :: Channel -> String
-prettyChan = \case
-  Haskell -> "#haskell"
---  Lisp -> "#lisp"
---  HaskellGame -> "#haskell-game"
---  Diagrams -> "#diagrams"
---  Tasty -> "#tasty"
---  HaskellDistributed -> "#haskell-distributed"
---  CakeML -> "#cakeml"
---  FSharp -> "##fsharp"
---  Ghcjs -> "#ghcjs"
---  HaskellBeginners -> "#haskell-beginners"
-  HLedger -> "#hledger"
---  Typelevel -> "#typelevel"
---  Scalaz -> "#scalaz"
---  Shapeless -> "#shapeless"
---  ProjectM36 -> "#project-m36"
---  Purescript -> "#purescript"
---  HaskellCN -> "#haskell-cn"
---  ReflexFrp -> "#reflex-frp"
---  HaskellIdeEngine -> "#haskell-ide-engine"
---  HaskellStack -> "#haskell-stack"
---  Snowdrift -> "#snowdrift"
---  Servant -> "#servant"
---  Ghc -> "#ghc"
---  Hackage -> "#hackage"
---  LibReviews -> "#lib.reviews"
+prettyChan = ciPretty . lookupInfo
 
 -- | Show a channel.
 showChan :: Channel -> String
-showChan = \case
-  Haskell -> "haskell"
---  Lisp -> "lisp"
---  HaskellGame -> "haskell-game"
---  Diagrams -> "diagrams"
---  Tasty -> "tasty"
---  HaskellDistributed -> "haskell-distributed"
---  CakeML -> "cakeml"
---  FSharp -> "fsharp"
---  Ghcjs -> "ghcjs"
---  HaskellBeginners -> "haskell-beginners"
-  HLedger -> "hledger"
---  Typelevel -> "typelevel"
---  Scalaz -> "scalaz"
---  Shapeless -> "shapeless"
---  ProjectM36 -> "project-m36"
---  Purescript -> "purescript"
---  HaskellCN -> "haskell-cn"
---  ReflexFrp -> "reflex-frp"
---  HaskellIdeEngine -> "haskell-ide-engine"
---  HaskellStack -> "haskell-stack"
---  Snowdrift -> "snowdrift"
---  Servant -> "servant"
---  Ghc -> "ghc"
---  Hackage -> "hackage"
---  LibReviews -> "lib.reviews"
+showChan = ciShow . lookupInfo
 
 -- | Show a channel.
 showChanInt :: Channel -> Int
-showChanInt = \case
-  Haskell -> 1
---  Lisp -> 2
---  HaskellGame -> 3
---  Diagrams -> 4
---  Tasty -> 5
---  HaskellDistributed -> 6
---  FSharp -> 8
---  Ghcjs -> 9
---  HaskellBeginners -> 10
-  HLedger -> 11
---  Typelevel -> 12
---  Scalaz -> 13
---  Shapeless -> 14
---  Purescript -> 15
---  HaskellCN -> 16
---  ReflexFrp -> 17
---  HaskellIdeEngine -> 18
---  HaskellStack -> 19
---  Snowdrift -> 20
---  Ghc -> 21
---  Hackage -> 22
---  Servant -> 23
---  CakeML -> 24
---  LibReviews -> 25
---  ProjectM36 -> 26
+showChanInt = ciInt . lookupInfo
+
+idxNum :: Channel -> Int
+idxNum = ciIdxNum . lookupInfo
 
 -- | Read a channel.
 parseChan :: String -> Maybe Channel
-parseChan = \case
-  "haskell" ->  Just Haskell
---  "lisp" ->  Just Lisp
---  "diagrams" ->  Just Diagrams
---  "haskell-game" -> Just HaskellGame
---  "tasty" -> Just Tasty
---  "haskell-beginners" -> Just HaskellBeginners
---  "haskell-distributed" -> Just HaskellDistributed
---  "cakeml" -> Just CakeML
---  "fsharp" -> Just FSharp
---  "ghcjs" -> Just Ghcjs
-  "hledger" -> Just HLedger
---  "typelevel" -> Just Typelevel
---  "scalaz" -> Just Scalaz
---  "shapeless" -> Just Shapeless
---  "project-m36" -> Just ProjectM36
---  "purescript" -> Just Purescript
---  "haskell-cn" -> Just HaskellCN
---  "reflex-frp" -> Just ReflexFrp
---  "haskell-ide-engine" -> Just HaskellIdeEngine
---  "haskell-stack" -> Just HaskellStack
---  "snowdrift" -> Just Snowdrift
---  "servant" -> Just Servant
---  "ghc" -> Just Ghc
---  "hackage" -> Just Hackage
---  "lib.reviews" -> Just LibReviews
-  _ -> Nothing
-
-idxNum :: Channel -> Int
-idxNum = \case
-  Haskell -> 1000
---  Lisp -> 2000
---  HaskellGame -> 3000
---  Diagrams -> 4000
---  Tasty -> 5000
---  HaskellDistributed -> 6000
-
---  FSharp -> 8000
---  Ghcjs -> 9000
---  HaskellBeginners -> 10000
-  HLedger -> 11000
---  Typelevel -> 12000
---  Scalaz -> 13000
---  Shapeless -> 14000
---  Purescript -> 15000
---  HaskellCN -> 16000
---  ReflexFrp -> 17000
---  HaskellIdeEngine -> 18000
---  HaskellStack -> 19000
---  Snowdrift -> 20000
---  Ghc -> 21000
---  Hackage -> 22000
---  Servant -> 23000
---  CakeML -> 24000
---  LibReviews -> 25000
---  ProjectM36 -> 26000
+parseChan name = fst <$> find ((== name) . ciShow . snd) infoList

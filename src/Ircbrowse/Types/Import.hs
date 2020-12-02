@@ -36,6 +36,7 @@ data Channel
 --  | CakeML
 --  | LibReviews
 --  | ProjectM36
+  | XMonad
   deriving (Eq, Enum, Bounded)
 
 data ChanInfo =
@@ -72,6 +73,7 @@ infoList =
     -- ,(CakeML, ChanInfo "#cakeml" "cakeml" 24 24000)
     -- ,(LibReviews, ChanInfo "#lib.reviews" "lib.reviews" 25 25000)
     -- ,(ProjectM36, ChanInfo "#project-m36" "project-m36" 26 26000)
+    ,(XMonad, ChanInfo "#xmonad" "xmonad" 27 27000)
     ]
 
 infoTable :: V.Vector ChanInfo

@@ -61,6 +61,7 @@ versions = zip [1..] ms where
         ,do ex ["insert into channel values ('freenode','lisp');"]
             ex ["create index event_channel_idx on event(channel);"]
             ex ["alter table event_count add channel integer"]
+            ex ["delete from event_count where channel is null"]
             ex ["alter table channel add id serial not null primary key"]
             ex ["create table event_order_index (id int not null, origin int not null);"]
             ex ["alter table event_order_index add constraint event_order_id_origin unique (id,origin);"]

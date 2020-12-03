@@ -6,6 +6,7 @@ module Ircbrowse.Types where
 import Ircbrowse.Data
 import Ircbrowse.Types.Import
 import Ircbrowse.Monads
+import Ircbrowse.PerfStats (PerfStatsCtx)
 
 import Data.Text
 import Database.PostgreSQL.Simple
@@ -31,6 +32,7 @@ instance CacheDir Config where
   getCacheDir = configCacheDir
 
 data PState = PState
+  { statePerfCtx :: PerfStatsCtx }
 
 -- | Statistics.
 data Stats = Stats

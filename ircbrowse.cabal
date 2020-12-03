@@ -47,7 +47,12 @@ executable ircbrowse
                      timezone-series,
                      attoparsec,
                      split,
-                     vector
+                     vector,
+                     clock,
+                     lifted-base,
+                     monad-control,
+                     containers,
+                     stm
   other-modules:
     Control.Monad.IO
     Data.IRC.Znc.Parse
@@ -66,6 +71,7 @@ executable ircbrowse
     Ircbrowse.Model.Social
     Ircbrowse.Model.Stats
     Ircbrowse.Monads
+    Ircbrowse.PerfStats
     Ircbrowse.Prelude
     Ircbrowse.Server
     Ircbrowse.System
@@ -80,6 +86,7 @@ executable ircbrowse
     Ircbrowse.View.NickColour
     Ircbrowse.View.Nicks
     Ircbrowse.View.Overview
+    Ircbrowse.View.PerfStats
     Ircbrowse.View.Profile
     Ircbrowse.View.Social
     Ircbrowse.View.Template

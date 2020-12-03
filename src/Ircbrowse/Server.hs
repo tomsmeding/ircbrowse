@@ -3,10 +3,11 @@
 
 -- | The web server.
 
-module Ircbrowse.Server where
+module Ircbrowse.Server (runServer) where
 
 import           Ircbrowse.Types
 import qualified Ircbrowse.Controllers as C
+import           Ircbrowse.PerfStats (newPerfContext, wrapTimedRoute)
 
 import           Snap.App
 import           Snap.Http.Server           hiding (Config)
@@ -16,13 +17,16 @@ import           Snap.Util.FileServe
 runServer :: Config -> Pool -> IO ()
 runServer config pool = do
   setUnicodeLocale "en_US"
-  httpServe server (serve config pool)
+  perfctx <- newPerfContext
+  let state = PState { statePerfCtx = perfctx }
+      rqPath rq = rqContextPath rq <> rqPathInfo rq  -- The URI, but then without the query
+  httpServe server (wrapTimedRoute perfctx (rqPath <$> getRequest) (serve config state pool))
 
   where server = setPort 10009 defaultConfig
 
 -- | Serve the controllers.
-serve :: Config -> Pool -> Snap ()
-serve config pool = route routes where
+serve :: Config -> PState -> Pool -> Snap ()
+serve config state pool = route routes where
   routes = [("/js/",serveDirectory "static/js")
            ,("/css/",serveDirectory "static/css")
            ,("/browse/:channel",run C.browse)
@@ -43,6 +47,7 @@ serve config pool = route routes where
            ,("/:channel",run C.stats)
            ,("/selection/:channel",run C.browseSpecified)
            ,("/export/:filename",run C.export)
+           ,("/perfstats",run C.perfStats)
            ,("/",run C.overview)
            ]
-  run = runHandler PState config pool
+  run = runHandler state config pool

@@ -10,6 +10,7 @@ import           Ircbrowse.Model.Quotes
 import           Ircbrowse.Model.Social
 import           Ircbrowse.Model.Stats
 import           Ircbrowse.Monads
+import           Ircbrowse.PerfStats (currentPerfStats)
 import           Ircbrowse.Types
 import           Ircbrowse.Types.Import
 import           Ircbrowse.View.Browse as V
@@ -17,6 +18,7 @@ import           Ircbrowse.View.Calendar as V
 import           Ircbrowse.View.NickCloud as V
 import           Ircbrowse.View.Nicks as V
 import           Ircbrowse.View.Overview as V
+import           Ircbrowse.View.PerfStats as V
 import           Ircbrowse.View.Profile as V
 import           Ircbrowse.View.Social as V
 
@@ -191,6 +193,12 @@ quotes = do
                  ,"#t"
                  ,secs]
          where secs = formatTime defaultTimeLocale "%s" t
+
+perfStats :: Controller Config PState ()
+perfStats = do
+  perfCtx <- reader (statePerfCtx . controllerState)
+  current <- currentPerfStats perfCtx
+  outputText $ renderHtml $ V.perfStats current
 
 --------------------------------------------------------------------------------
 -- Utilities

@@ -25,7 +25,6 @@ serve :: Config -> Pool -> Snap ()
 serve config pool = route routes where
   routes = [("/js/",serveDirectory "static/js")
            ,("/css/",serveDirectory "static/css")
-           ,("/js/",serveDirectory "static/js")
            ,("/browse/:channel",run C.browse)
            ,("/nick-cloud/:channel",run C.nickCloud)
            ,("/social",run C.socialGraph)

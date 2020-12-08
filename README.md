@@ -10,7 +10,7 @@ by [Tom Smeding](https://github.com/tomsmeding).
 ## Adding a channel
 
 Add to
-[`Ircbrowse.Types.Import`](https://github.com/chrisdone/ircbrowse/edit/master/src/Ircbrowse/Types/Import.hs)
+[`Ircbrowse.Types.Import`](https://github.com/tomsmeding/ircbrowse/edit/master/src/Ircbrowse/Types/Import.hs)
 and open a pull request.
 
 ## Building & running

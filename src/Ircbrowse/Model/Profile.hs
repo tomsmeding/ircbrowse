@@ -22,14 +22,16 @@ data NickStats = NickStats
   , nickKarma  :: !Int
   }
 
-activeHours :: Text -> Bool -> Range -> Model c PState NickStats
-activeHours nick recent range =
-  wrapTimedFunc' "activeHours" (asks (statePerfCtx . modelStateAnns))
-                 (activeHours' nick recent range)
+wrapTimed :: String -> Model c PState a -> Model c PState a
+wrapTimed key = wrapTimedFunc' key(asks (statePerfCtx . modelStateAnns)) 
 
-activeHours' :: Text -> Bool -> Range -> Model c s NickStats
+activeHours :: Text -> Bool -> Range -> Model c PState NickStats
+activeHours nick recent range = wrapTimed "activeHours" (activeHours' nick recent range)
+
+activeHours' :: Text -> Bool -> Range -> Model c PState NickStats
 activeHours' nick recent (Range from to) = do
-  hours <- query ["SELECT"
+  hours <- wrapTimed "activeHours-q1" $
+           query ["SELECT"
                  ,"DATE_PART('HOUR',timestamp) :: integer AS hour,"
                  ,"AVG(ARRAY_UPPER(STRING_TO_ARRAY(text,' '),1)) :: integer,"
                  ,"SUM(ARRAY_UPPER(STRING_TO_ARRAY(text,' '),1)) :: integer,"
@@ -42,7 +44,8 @@ activeHours' nick recent (Range from to) = do
                  ,"GROUP BY DATE_PART('HOUR',timestamp)"
                  ,"ORDER BY hour;"]
                  (nick,recent,from,to)
-  years <- query ["SELECT"
+  years <- wrapTimed "activeHours-q2" $
+           query ["SELECT"
                  ,"DATE_PART('YEAR',timestamp) :: integer,"
                  ,"ROUND(AVG(ARRAY_UPPER(STRING_TO_ARRAY(text,' '),1))) :: integer,"
                  ,"MAX(ARRAY_UPPER(STRING_TO_ARRAY(text,' '),1)) :: integer,"
@@ -57,7 +60,8 @@ activeHours' nick recent (Range from to) = do
                  ,"ORDER BY DATE_PART('YEAR',timestamp);"]
                  (nick,recent,from,to)
   let lines = sum (map (\(_,_,_,_,lines) -> lines) years)
-  rquote <- query ["SELECT"
+  rquote <- wrapTimed "activeHours-q3" $
+            query ["SELECT"
                   ,"type,text"
                   ,"FROM event"
                   ,"WHERE nick = ? and TYPE in ('talk','act') AND"
@@ -67,7 +71,8 @@ activeHours' nick recent (Range from to) = do
                   ,"OFFSET random()*?"
                   ,"LIMIT 1"]
                   (nick,recent,from,to,lines)
-  quotes <- query ["SELECT"
+  quotes <- wrapTimed "activeHours-q4" $
+            query ["SELECT"
                   ,"index.id,timestamp,REGEXP_REPLACE(text,'^@remember ([^ ]+)','')"
                   ,"FROM event, event_order_index index"
                   ,"WHERE TYPE in ('talk','act') AND"
@@ -77,9 +82,11 @@ activeHours' nick recent (Range from to) = do
                   ,"AND REGEXP_REPLACE(text,'^@remember ([^ ]+).*',E'\\\\1') = ?"
                   ,"ORDER BY timestamp DESC"]
                   (idxNum Haskell,recent,from,to,nick)
-  karmap <- single ["select count(*) from event where text like ?"]
+  karmap <- wrapTimed "activeHours-q5" $
+            single ["select count(*) from event where text like ?"]
                    (Only (nick <> "++%"))
-  karmam <- single ["select count(*) from event where text like ?"]
+  karmam <- wrapTimed "activeHours-q6" $
+            single ["select count(*) from event where text like ?"]
                    (Only (nick <> "--%"))
   return $
     NickStats { nickHours = hours

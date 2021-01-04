@@ -2,12 +2,14 @@
 
 -- | Statistics for a specific nick's profiling.
 
-module Ircbrowse.Model.Profile where
+module Ircbrowse.Model.Profile (activeHours, NickStats(..)) where
 
 import Ircbrowse.Data
+import Ircbrowse.PerfStats (wrapTimedFunc')
 import Ircbrowse.Types
 import Ircbrowse.Types.Import
 
+import Control.Monad.Reader (asks)
 import Data.Text (Text)
 import Snap.App
 
@@ -20,8 +22,13 @@ data NickStats = NickStats
   , nickKarma  :: !Int
   }
 
-activeHours :: Text -> Bool -> Range -> Model c s NickStats
-activeHours nick recent (Range from to) = do
+activeHours :: Text -> Bool -> Range -> Model c PState NickStats
+activeHours nick recent range =
+  wrapTimedFunc' "activeHours" (asks (statePerfCtx . modelStateAnns))
+                 (activeHours' nick recent range)
+
+activeHours' :: Text -> Bool -> Range -> Model c s NickStats
+activeHours' nick recent (Range from to) = do
   hours <- query ["SELECT"
                  ,"DATE_PART('HOUR',timestamp) :: integer AS hour,"
                  ,"AVG(ARRAY_UPPER(STRING_TO_ARRAY(text,' '),1)) :: integer,"

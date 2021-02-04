@@ -20,7 +20,7 @@ data Channel
 --  | FSharp
 --  | Ghcjs
 --  | HaskellBeginners
-  | HLedger
+  -- | HLedger
 --  | Typelevel
 --  | Scalaz
 --  | Shapeless
@@ -57,7 +57,7 @@ infoList =
     -- ,(FSharp, ChanInfo "##fsharp" "fsharp" 8 8000)
     -- ,(Ghcjs, ChanInfo "#ghcjs" "ghcjs" 9 9000)
     -- ,(HaskellBeginners, ChanInfo "#haskell-beginners" "haskell-beginners" 10 10000)
-    ,(HLedger, ChanInfo "#hledger" "hledger" 11 11000)
+    -- ,(HLedger, ChanInfo "#hledger" "hledger" 11 11000)
     -- ,(Typelevel, ChanInfo "#typelevel" "typelevel" 12 12000)
     -- ,(Scalaz, ChanInfo "#scalaz" "scalaz" 13 13000)
     -- ,(Shapeless, ChanInfo "#shapeless" "shapeless" 14 14000)
@@ -81,8 +81,8 @@ infoTable =
     let firstChannel = minBound :: Channel
         lastChannel  = maxBound :: Channel
         numChannels = fromEnum lastChannel - fromEnum firstChannel + 1
-    in if all id [length infoList == numChannels
-                 ,map fst infoList == [firstChannel..lastChannel]]  -- also requires sorted
+    in if and [length infoList == numChannels
+              ,map fst infoList == [firstChannel..lastChannel]]  -- also requires sorted
            then V.fromListN numChannels (map snd infoList)
            else error "Invalid infoList in Import.hs"
 

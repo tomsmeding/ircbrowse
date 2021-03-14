@@ -43,7 +43,6 @@ getStats channel range@(Range from to) = do
                          (cid,from,to)
   nickstats <- getNickStats channel range
   networks <- queryNoParams ["SELECT name,title FROM network order by title"]
-  channels <- queryNoParams ["SELECT network,name FROM channel order by name"]
   activitybyyear <- query ["SELECT year,lines FROM general_activity_by_year where channel = ? order by year asc"]
                           (Only cid)
   conversationbyyear <- query ["SELECT year,lines FROM conversation_by_year where channel = ? order by year asc"]
@@ -57,7 +56,6 @@ getStats channel range@(Range from to) = do
     , stDailyActivity = dailyactivity
     , stActiveNicks   = nickstats
     , stNetworks      = networks
-    , stChannels      = channels
     , stActivityByYear = activitybyyear
     , stConversationByYear = conversationbyyear
    }
@@ -93,7 +91,6 @@ sampleStats         = Stats
                               (randomRs (0,60) (mkStdGen 3))
                               [1..31]
   , stNetworks      = [("freenode","Freenode")]
-  , stChannels      = [("freenode","haskell")]
   , stActivityByYear = []
   , stConversationByYear = []
   }

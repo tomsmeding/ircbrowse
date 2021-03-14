@@ -74,6 +74,7 @@ versions = zip [1..] ms where
          -- insert into event_order_index select rank() over(order by timestamp asc) as id,id as origin,1000 as idx from event where channel = 1 order by timestamp asc;
          --
          -- It's how the event order index is populated.
+        ,do ex ["drop table channel"]
        ]
 
   ex q = exec q ()

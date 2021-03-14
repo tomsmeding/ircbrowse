@@ -43,7 +43,6 @@ data Stats = Stats
   , stDailyActivity      :: ![(Integer,Integer)]
   , stActiveNicks        :: ![(String,Integer)]
   , stNetworks           :: ![(String,String)]
-  , stChannels           :: ![(String,String)]
   , stActivityByYear     :: ![(Integer,Integer)]
   , stConversationByYear :: ![(Integer,Integer)]
   } deriving Show
@@ -57,7 +56,6 @@ instance Default Stats where
     , stActiveTimes = []
     , stDailyActivity = []
     , stNetworks = []
-    , stChannels = []
     , stConversationByYear = []
     , stActivityByYear = []
     }

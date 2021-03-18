@@ -7,7 +7,7 @@ import           Ircbrowse.Model.Events
 import           Ircbrowse.Model.Nicks
 import           Ircbrowse.Model.Profile
 import           Ircbrowse.Model.Quotes
-import           Ircbrowse.Model.Social
+-- import           Ircbrowse.Model.Social
 import           Ircbrowse.Model.Stats
 import           Ircbrowse.Monads
 import           Ircbrowse.PerfStats (currentPerfStats)
@@ -20,7 +20,7 @@ import           Ircbrowse.View.Nicks as V
 import           Ircbrowse.View.Overview as V
 import           Ircbrowse.View.PerfStats as V
 import           Ircbrowse.View.Profile as V
-import           Ircbrowse.View.Social as V
+-- import           Ircbrowse.View.Social as V
 
 import           Data.ByteString (ByteString)
 import           Data.Text (Text)
@@ -86,13 +86,13 @@ allNicks = do
     count <- model $ getNickCount channel (mode == "recent") range
     return $ V.nicks channel count nicks mode
 
-socialGraph :: Controller Config PState ()
-socialGraph = do
-  range <- getRange
-  channel <- getChannelMaybe
-  viewCached (Social channel) $ do
-    graph <- model $ getSocialGraph channel range
-    return $ V.socialGraph graph
+-- socialGraph :: Controller Config PState ()
+-- socialGraph = do
+--   range <- getRange
+--   channel <- getChannelMaybe
+--   viewCached (Social channel) $ do
+--     graph <- model $ getSocialGraph channel range
+--     return $ V.socialGraph graph
 
 nickCloud :: Controller Config PState ()
 nickCloud = do

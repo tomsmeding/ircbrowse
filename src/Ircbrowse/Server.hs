@@ -31,7 +31,7 @@ serve config state pool = route routes where
            ,("/css/",serveDirectory "static/css")
            ,("/browse/:channel",run C.browse)
            ,("/nick-cloud/:channel",run C.nickCloud)
-           ,("/social",run C.socialGraph)
+           -- ,("/social",run C.socialGraph)
            ,("/day/:channel/:year/:month/:day",run (C.browseDay False))
            ,("/day/:channel/today/:mode",run (C.browseDay True))
            ,("/day/:channel/today",run (C.browseDay True))

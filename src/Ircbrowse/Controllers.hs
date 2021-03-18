@@ -210,9 +210,14 @@ getRange = do
   return range
 
 getChannel :: Controller c s Channel
-getChannel = getChannelMaybe
-             >>= maybe (error "expected a channel on this page!")
-                       return
+getChannel = do
+    chan <- getChannelMaybe
+    case chan of
+      Just c -> return c
+      Nothing -> do
+          modifyResponse $ setResponseStatus 404 "Not Found"
+          writeBS "Channel not found"
+          getResponse >>= finishWith
 
 getChannelMaybe :: Controller c s (Maybe Channel)
 getChannelMaybe = do

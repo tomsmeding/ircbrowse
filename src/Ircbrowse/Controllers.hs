@@ -36,9 +36,9 @@ import           Text.Blaze.Pagination
 --------------------------------------------------------------------------------
 -- Controllers
 
-export :: Controller Config PState ()
-export = do
-  return ()
+-- export :: Controller Config PState ()
+-- export = do
+--   return ()
 
 overview :: Controller Config PState ()
 overview = do
@@ -53,11 +53,11 @@ stats = do
     stats <- model $ getStats channel range
     return $ V.statsOverview channel range stats
 
-channel :: Controller Config PState ()
-channel = do
-  channel <- getChannel
-  viewCached (Channel channel) $ do
-    return $ V.channel channel
+-- channel :: Controller Config PState ()
+-- channel = do
+--   channel <- getChannel
+--   viewCached (Channel channel) $ do
+--     return $ V.channel channel
 
 calendar :: Controller Config PState ()
 calendar = do

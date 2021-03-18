@@ -7,7 +7,7 @@ category:            Text, IRC, Language
 author:              Keegan McAllister <mcallister.keegan@gmail.com>
 maintainer:          Keegan McAllister <mcallister.keegan@gmail.com>
 build-type:          Simple
-cabal-version:       >=1.2
+cabal-version:       >=1.8
 description:
   Use this library to parse IRC logs saved by the @clog@ bot on Freenode.
   This includes the logs of @#haskell@ which are available from

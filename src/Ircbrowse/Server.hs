@@ -46,7 +46,7 @@ serve config state pool = route routes where
            ,("/calendar/:channel",run C.calendar)
            ,("/:channel",run C.stats)
            ,("/selection/:channel",run C.browseSpecified)
-           ,("/export/:filename",run C.export)
+           -- ,("/export/:filename",run C.export)
            ,("/perfstats",run C.perfStats)
            ,("/",run C.overview)
            ]

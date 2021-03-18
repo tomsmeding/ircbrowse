@@ -75,6 +75,7 @@ versions = zip [1..] ms where
          --
          -- It's how the event order index is populated.
         ,do ex ["drop table channel"]
+        ,do ex ["drop table network"]
        ]
 
   ex q = exec q ()

@@ -154,9 +154,11 @@ getPaginatedPdfs channel (PN _ pagination _) = do
 
 getAllPdfs :: Channel -> Model c s [(Int,ZonedTime,Text)]
 getAllPdfs channel = do
-  events <- query ["SELECT e.id,e.timestamp,e.text FROM event e,"
-                  ,"event_order_index idx"
-                  ,"WHERE e.id = idx.origin and idx.idx = ?"
+  events <- query ["SELECT idx2.id,e.timestamp,e.text FROM event e,"
+                  ,"event_order_index idx,"
+                  ,"event_order_index idx2"
+                  ,"WHERE e.id = idx.origin AND idx.idx = ?"
+                  ,"AND e.id = idx2.origin AND idx2.idx = ?"
                   ,"ORDER BY idx.id asc"]
-                  (Only (idxNum channel + 1))
+                  (idxNum channel + 1, idxNum channel)
   return events

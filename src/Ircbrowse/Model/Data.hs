@@ -37,4 +37,4 @@ generateData = do
            ,"text LIKE '%http%.pdf%' AND "
            ,"text ~ ?"
            ,"order by id asc;"]
-           (idxNum channel,"https?://[^ ]+\\.pdf")
+           (showChanInt channel,"https?://[^ ]+\\.pdf")

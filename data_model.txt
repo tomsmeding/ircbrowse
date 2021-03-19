@@ -1,0 +1,158 @@
+event_count:
+  per channel, the total number of events
+
+general_activity_by_year:
+  per channel, for each year, the number of events in that year
+
+conversation_by_year:
+  per channel, for each year, the number of events in that year that have type in {talk,act}
+
+event:
+  - id (bigint) [row id]
+  - timestamp (timestamp)
+  - type (text)
+  - nick (text)
+  - network (integer)
+  - channel (integer)
+
+  type: join, part, quit, renick, talk, notice, act, kick, mode, topic
+  Unused types: log, names (only for clog)
+    however, 'log' could be useful to manually (or automatically) denote anomalies in the log.
+
+event_order_index:
+  - id (integer) [externally-visible event id]
+  - origin (integer) -> event.id
+  - idx (integer) [channel identifier * 1000]
+
+  Also contains event pointers for PDF links at (id*1000 + 1); see Ircbrowse.Model.Data.generateData.
+
+version:
+  - version (integer) [schema version]
+
+(nick_to_nick/nick_to_nick_tmp: unused, ostensibly for getSocialGraph)
+
+
+
+
+
+
+ircbrowse=# \d
+                    List of relations
+ Schema |           Name           |   Type   |   Owner
+--------+--------------------------+----------+-----------
+ public | channel                  | table    | ircbrowse
+ public | channel_id_seq           | sequence | ircbrowse
+ public | conversation_by_year     | table    | ircbrowse
+ public | event                    | table    | ircbrowse
+ public | event__number_seq        | sequence | ircbrowse
+ public | event_count              | table    | ircbrowse
+ public | event_order_index        | table    | ircbrowse
+ public | general_activity_by_year | table    | ircbrowse
+ public | network                  | table    | ircbrowse
+ public | nick_to_nick             | table    | ircbrowse
+ public | nick_to_nick_id_seq      | sequence | ircbrowse
+ public | nick_to_nick_tmp         | table    | ircbrowse
+ public | nick_to_nick_tmp_id_seq  | sequence | ircbrowse
+ public | version                  | table    | ircbrowse
+(14 rows)
+
+ircbrowse=# \d channel
+                             Table "public.channel"
+ Column  |  Type   | Collation | Nullable |               Default
+---------+---------+-----------+----------+-------------------------------------
+ network | text    |           | not null |
+ name    | text    |           | not null |
+ id      | integer |           | not null | nextval('channel_id_seq'::regclass)
+Indexes:
+    "channel_pkey" PRIMARY KEY, btree (id)
+
+ircbrowse=# \d conversation_by_year
+        Table "public.conversation_by_year"
+ Column  |  Type   | Collation | Nullable | Default
+---------+---------+-----------+----------+---------
+ year    | integer |           | not null |
+ lines   | integer |           | not null |
+ channel | integer |           | not null |
+Indexes:
+    "conversation_by_year_channel_year_key" UNIQUE CONSTRAINT, btree (channel, year)
+
+ircbrowse=# \d event
+                                         Table "public.event"
+  Column   |           Type           | Collation | Nullable |                Default
+-----------+--------------------------+-----------+----------+----------------------------------------
+ timestamp | timestamp with time zone |           |          |
+ type      | text                     |           |          |
+ nick      | text                     |           |          |
+ text      | text                     |           |          |
+ network   | integer                  |           |          |
+ channel   | integer                  |           |          |
+ id        | bigint                   |           | not null | nextval('event__number_seq'::regclass)
+Indexes:
+    "event_unique_message" UNIQUE CONSTRAINT, btree (network, channel, "timestamp", nick, text)
+    "event_channel_idx" btree (channel)
+    "event_id_idx" btree (id)
+
+ircbrowse=# \d event_count
+             Table "public.event_count"
+ Column  |  Type   | Collation | Nullable | Default
+---------+---------+-----------+----------+---------
+ count   | integer |           | not null | 0
+ channel | integer |           |          |
+
+ircbrowse=# \d event_order_index
+         Table "public.event_order_index"
+ Column |  Type   | Collation | Nullable | Default
+--------+---------+-----------+----------+---------
+ id     | integer |           | not null |
+ origin | integer |           | not null |
+ idx    | integer |           |          |
+Indexes:
+    "event_order_id_origin" UNIQUE CONSTRAINT, btree (id, origin)
+    "event_order_idx" btree (id)
+    "event_order_idx_idx" btree (idx)
+    "event_order_origin_dx" btree (origin)
+
+ircbrowse=# \d general_activity_by_year
+      Table "public.general_activity_by_year"
+ Column  |  Type   | Collation | Nullable | Default
+---------+---------+-----------+----------+---------
+ year    | integer |           | not null |
+ lines   | integer |           | not null |
+ channel | integer |           | not null |
+Indexes:
+    "general_activity_by_year_channel_year_key" UNIQUE CONSTRAINT, btree (channel, year)
+
+ircbrowse=# \d network
+             Table "public.network"
+ Column | Type | Collation | Nullable | Default
+--------+------+-----------+----------+---------
+ name   | text |           | not null |
+ title  | text |           | not null |
+
+ircbrowse=# \d nick_to_nick
+                            Table "public.nick_to_nick"
+ Column |  Type   | Collation | Nullable |                 Default
+--------+---------+-----------+----------+------------------------------------------
+ id     | integer |           | not null | nextval('nick_to_nick_id_seq'::regclass)
+ nick1  | text    |           | not null |
+ nick2  | text    |           | not null |
+ count  | integer |           | not null | 0
+Indexes:
+    "nick_to_nick_pkey" PRIMARY KEY, btree (id)
+
+ircbrowse=# \d nick_to_nick_tmp
+                            Table "public.nick_to_nick_tmp"
+ Column |  Type   | Collation | Nullable |                   Default
+--------+---------+-----------+----------+----------------------------------------------
+ id     | integer |           | not null | nextval('nick_to_nick_tmp_id_seq'::regclass)
+ nick1  | text    |           | not null |
+ nick2  | text    |           | not null |
+ count  | integer |           | not null | 0
+Indexes:
+    "nick_to_nick_tmp_pkey" PRIMARY KEY, btree (id)
+
+ircbrowse=# \d version
+               Table "public.version"
+ Column  |  Type   | Collation | Nullable | Default
+---------+---------+-----------+----------+---------
+ version | integer |           | not null | 0

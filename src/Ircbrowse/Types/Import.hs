@@ -42,38 +42,37 @@ data Channel
 data ChanInfo =
     ChanInfo { ciPretty :: String
              , ciShow :: String
-             , ciInt :: Int
-             , ciIdxNum :: Int }
+             , ciInt :: Int }
 
 infoList :: [(Channel, ChanInfo)]
 infoList =
-    [(Haskell, ChanInfo "#haskell" "haskell" 1 1000)
-    -- ,(Lisp, ChanInfo "#lisp" "lisp" 2 2000)
-    -- ,(HaskellGame, ChanInfo "#haskell-game" "haskell-game" 3 3000)
-    -- ,(Diagrams, ChanInfo "#diagrams" "diagrams" 4 4000)
-    -- ,(Tasty, ChanInfo "#tasty" "tasty" 5 5000)
-    -- ,(HaskellDistributed, ChanInfo "#haskell-distributed" "haskell-distributed" 6 6000)
+    [(Haskell, ChanInfo "#haskell" "haskell" 1)
+    -- ,(Lisp, ChanInfo "#lisp" "lisp" 2)
+    -- ,(HaskellGame, ChanInfo "#haskell-game" "haskell-game" 3)
+    -- ,(Diagrams, ChanInfo "#diagrams" "diagrams" 4)
+    -- ,(Tasty, ChanInfo "#tasty" "tasty" 5)
+    -- ,(HaskellDistributed, ChanInfo "#haskell-distributed" "haskell-distributed" 6)
 
-    -- ,(FSharp, ChanInfo "##fsharp" "fsharp" 8 8000)
-    -- ,(Ghcjs, ChanInfo "#ghcjs" "ghcjs" 9 9000)
-    -- ,(HaskellBeginners, ChanInfo "#haskell-beginners" "haskell-beginners" 10 10000)
-    -- ,(HLedger, ChanInfo "#hledger" "hledger" 11 11000)
-    -- ,(Typelevel, ChanInfo "#typelevel" "typelevel" 12 12000)
-    -- ,(Scalaz, ChanInfo "#scalaz" "scalaz" 13 13000)
-    -- ,(Shapeless, ChanInfo "#shapeless" "shapeless" 14 14000)
-    -- ,(Purescript, ChanInfo "#purescript" "purescript" 15 15000)
-    -- ,(HaskellCN, ChanInfo "#haskell-cn" "haskell-cn" 16 16000)
-    -- ,(ReflexFrp, ChanInfo "#reflex-frp" "reflex-frp" 17 17000)
-    -- ,(HaskellIdeEngine, ChanInfo "#haskell-ide-engine" "haskell-ide-engine" 18 18000)
-    -- ,(HaskellStack, ChanInfo "#haskell-stack" "haskell-stack" 19 19000)
-    -- ,(Snowdrift, ChanInfo "#snowdrift" "snowdrift" 20 20000)
-    -- ,(Ghc, ChanInfo "#ghc" "ghc" 21 21000)
-    -- ,(Hackage, ChanInfo "#hackage" "hackage" 22 22000)
-    -- ,(Servant, ChanInfo "#servant" "servant" 23 23000)
-    -- ,(CakeML, ChanInfo "#cakeml" "cakeml" 24 24000)
-    -- ,(LibReviews, ChanInfo "#lib.reviews" "lib.reviews" 25 25000)
-    -- ,(ProjectM36, ChanInfo "#project-m36" "project-m36" 26 26000)
-    ,(XMonad, ChanInfo "#xmonad" "xmonad" 27 27000)
+    -- ,(FSharp, ChanInfo "##fsharp" "fsharp" 8)
+    -- ,(Ghcjs, ChanInfo "#ghcjs" "ghcjs" 9)
+    -- ,(HaskellBeginners, ChanInfo "#haskell-beginners" "haskell-beginners" 10)
+    -- ,(HLedger, ChanInfo "#hledger" "hledger" 11)
+    -- ,(Typelevel, ChanInfo "#typelevel" "typelevel" 12)
+    -- ,(Scalaz, ChanInfo "#scalaz" "scalaz" 13)
+    -- ,(Shapeless, ChanInfo "#shapeless" "shapeless" 14)
+    -- ,(Purescript, ChanInfo "#purescript" "purescript" 15)
+    -- ,(HaskellCN, ChanInfo "#haskell-cn" "haskell-cn" 16)
+    -- ,(ReflexFrp, ChanInfo "#reflex-frp" "reflex-frp" 17)
+    -- ,(HaskellIdeEngine, ChanInfo "#haskell-ide-engine" "haskell-ide-engine" 18)
+    -- ,(HaskellStack, ChanInfo "#haskell-stack" "haskell-stack" 19)
+    -- ,(Snowdrift, ChanInfo "#snowdrift" "snowdrift" 20)
+    -- ,(Ghc, ChanInfo "#ghc" "ghc" 21)
+    -- ,(Hackage, ChanInfo "#hackage" "hackage" 22)
+    -- ,(Servant, ChanInfo "#servant" "servant" 23)
+    -- ,(CakeML, ChanInfo "#cakeml" "cakeml" 24)
+    -- ,(LibReviews, ChanInfo "#lib.reviews" "lib.reviews" 25)
+    -- ,(ProjectM36, ChanInfo "#project-m36" "project-m36" 26)
+    ,(XMonad, ChanInfo "#xmonad" "xmonad" 27)
     ]
 
 infoTable :: V.Vector ChanInfo
@@ -102,7 +101,7 @@ showChanInt :: Channel -> Int
 showChanInt = ciInt . lookupInfo
 
 idxNum :: Channel -> Int
-idxNum = ciIdxNum . lookupInfo
+idxNum = (*1000) . showChanInt
 
 -- | Read a channel.
 parseChan :: String -> Maybe Channel

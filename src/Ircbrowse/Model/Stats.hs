@@ -4,6 +4,7 @@ module Ircbrowse.Model.Stats where
 
 import Ircbrowse.Types
 import Ircbrowse.Data
+import Ircbrowse.Model.DB
 import Ircbrowse.Types.Import
 
 import Numeric
@@ -12,20 +13,9 @@ import System.Random
 
 getStats :: Channel -> Range -> Model c s Stats
 getStats channel range@(Range from to) = do
-  count <- single ["SELECT COUNT(*)"
-                  ,"FROM event"
-                  ,"WHERE channel = ? and timestamp > ? and timestamp < ?"]
-                  (cid,from,to)
-  msgcount <- single ["SELECT COUNT(*)"
-                     ,"FROM event"
-                     ,"WHERE type = 'talk'"
-                     ,"AND channel = ? and timestamp > ? and timestamp < ?"]
-                     (cid,from,to)
-  nicks <- single ["SELECT COUNT(DISTINCT nick)"
-                  ,"FROM event"
-                  ,"WHERE channel = ? and type = 'talk'"
-                  ,"AND timestamp > ? and timestamp < ?"]
-                  (cid,from,to)
+  count <- countEvents (filterChannel channel <> filterTime range)
+  msgcount <- countEvents (filterChannel channel <> filterTime range <> filterTypes ["talk"])
+  nicks <- countDistinctNicks (filterChannel channel <> filterTime range <> filterTypes ["talk"])
   activetimes <- query ["SELECT DATE_PART('HOUR',timestamp)::int,COUNT(*)"
                        ,"FROM EVENT"
                        ,"WHERE channel = ? and type = 'talk'"
@@ -48,9 +38,9 @@ getStats channel range@(Range from to) = do
                               (Only cid)
 
   return Stats
-    { stEventCount    = fromMaybe 0 count
-    , stMsgCount      = fromMaybe 0 msgcount
-    , stNickCount     = fromMaybe 0 nicks
+    { stEventCount    = count
+    , stMsgCount      = msgcount
+    , stNickCount     = nicks
     , stActiveTimes   = activetimes
     , stDailyActivity = dailyactivity
     , stActiveNicks   = nickstats

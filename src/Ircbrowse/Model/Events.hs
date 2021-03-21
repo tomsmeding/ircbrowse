@@ -1,6 +1,6 @@
 module Ircbrowse.Model.Events where
 
-import Database.PostgreSQL.Simple.FromRow
+import Database.PostgreSQL.Simple.FromRow (FromRow)
 import Ircbrowse.Data
 import Ircbrowse.Monads
 import Ircbrowse.Types

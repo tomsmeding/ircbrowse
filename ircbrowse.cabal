@@ -63,6 +63,7 @@ executable ircbrowse
     Ircbrowse.Data
     Ircbrowse.Import
     Ircbrowse.Model.Data
+    Ircbrowse.Model.DB
     Ircbrowse.Model.Events
     Ircbrowse.Model.Migrations
     Ircbrowse.Model.Nicks

@@ -35,7 +35,7 @@ import           Data.Time.Clock            (UTCTime)
 import           Data.Time.Clock.POSIX      (utcTimeToPOSIXSeconds)
 import           Data.Word                  (Word64)
 import           Foreign.C.Types            (CTime (..))
-import           Prelude                    (Bool (..), Eq (..), FilePath, IO, Int, Integral (..), Monad (..), Num ((-)), Ord (..), Ordering (..), Read (..), Show (..), String, fmap, fromInteger, fromIntegral, id, not, otherwise, truncate, ($), (.))
+import           Prelude                    (Bool (..), Eq (..), FilePath, IO, Int, Integral (..), Monad (..), Num ((-)), Ord (..), Ordering (..), Read (..), Show (..), String, fmap, fromInteger, fromIntegral, id, not, otherwise, truncate, ($), (.), error)
 #ifdef PORTABLE
 import           Prelude                    (realToFrac, ($!))
 #endif
@@ -56,6 +56,7 @@ import qualified Data.ByteString.Unsafe     as S
 import           Data.Time.Format           ()
 import           Foreign.C.String           (CString)
 import           Foreign.Marshal.Alloc      (mallocBytes)
+import           Foreign.Ptr                (nullPtr)
 #endif
 
 ------------------------------------------------------------------------------
@@ -1304,7 +1305,9 @@ formatHttpTime t = do
 
 ------------------------------------------------------------------------------
 parseHttpTime s = S.unsafeUseAsCString s $ \ptr ->
-    c_parse_http_time ptr
+    if ptr == nullPtr
+        then error "parseHttpTime: got ByteString that is a null pointer!"
+        else c_parse_http_time ptr
 
 #endif
 

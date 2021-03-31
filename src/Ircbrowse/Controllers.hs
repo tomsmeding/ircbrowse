@@ -142,14 +142,13 @@ browseSomeDay today day datetext = do
 browse :: Controller Config PState ()
 browse = do
   evid <- getIntegerMaybe "id"
-  timestamp <- getTimestamp
   channel <- getChannel
   q <- getSearchText "q"
   pn <- getPagination "events"
   let pn' = pn { pnResultsPerPage = Just [25,35,50,100] }
   (pagination,logs) <- model $ getEvents channel evid pn' q
   uri <- getMyURI
-  outputText $ renderHtml $ V.browse channel uri timestamp logs pn' { pnPn = pagination } q
+  outputText $ renderHtml $ V.browse channel uri logs pn' { pnPn = pagination } q
 
 pdfs :: Controller Config PState ()
 pdfs = do
@@ -169,12 +168,11 @@ uniquePdfs = do
 paginatedPdfs :: Controller Config PState ()
 paginatedPdfs = do
   channel <- getChannel
-  timestamp <- getTimestamp
   pn <- getPagination "events"
   let pn' = pn { pnResultsPerPage = Just [25,35,50,100] }
   (pagination,logs) <- model $ getPaginatedPdfs channel pn'
   uri <- getMyURI
-  outputText $ renderHtml $ V.pdfs channel uri timestamp logs pn' { pnPn = pagination } Nothing
+  outputText $ renderHtml $ V.pdfs channel uri logs pn' { pnPn = pagination } Nothing
 
 quotes :: Controller Config PState ()
 quotes = do

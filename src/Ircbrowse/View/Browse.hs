@@ -9,7 +9,6 @@
 
 module Ircbrowse.View.Browse where
 
-import           Ircbrowse.System
 import           Ircbrowse.Types.Import
 import           Ircbrowse.View hiding (id)
 import           Ircbrowse.View.NickColour
@@ -27,10 +26,10 @@ import           Network.URI.Params
 import qualified Text.Blaze.Html5.Attributes as A
 import           Text.Links
 
-browse :: Channel -> URI -> Maybe UTCTime -> [Event] -> PN -> Maybe Text -> Html
+browse :: Channel -> URI -> [Event] -> PN -> Maybe Text -> Html
 browse channel = browser True ("Browse #" <> T.pack (showChan channel)) channel $ mempty
 
-pdfs :: Channel -> URI -> Maybe UTCTime -> [Event] -> PN -> Maybe Text -> Html
+pdfs :: Channel -> URI -> [Event] -> PN -> Maybe Text -> Html
 pdfs channel = browser False ("PDFs linked in #" <> T.pack (showChan channel)) channel $ do
   p $ a ! A.href (toValue ("/pdfs/" ++ showChan channel ++ "/unique")) $ do
     "Show unique PDF links →"
@@ -40,12 +39,11 @@ browser :: Bool
         -> Channel
         -> Html
         -> URI
-        -> Maybe UTCTime
         -> [Event]
         -> PN
         -> Maybe Text
         -> Html
-browser _search title' channel extra uri _ events pn q' =
+browser _search title' channel extra uri events pn q' =
   template "browse" title' mempty $ do
     channelNav channel
     containerFluid $ do
@@ -100,7 +98,7 @@ searchForm q' =
 
 paginatedTable :: Channel -> URI -> [Event] -> PN -> Html
 paginatedTable _ uri events pn' = do
-  let pn = pn' { pnURI = deleteQueryKey "timestamp" (deleteQueryKey "id" uri) }
+  let pn = pn' { pnURI = deleteQueryKey "id" uri }
   pagination pn
   eventsTable True events uri
   pagination pn { pnPn = (pnPn pn) { pnShowDesc = False }
@@ -111,10 +109,9 @@ eventsTable :: Bool -> [Event] -> URI -> Html
 eventsTable clear events uri =
   table !. "events table" $
     forM_ events $ \event -> do
-      let secs = formatTime defaultTimeLocale "%s" (zonedTimeToUTC (eventTimestamp event))
-          anchor = ("t" ++ secs)
-          eventClass | Just t <- lookup "timestamp" (uriParams uri),
-                       t == secs = "event info"
+      let anchor = "trid" ++ show (eventId event)
+          eventClass | Just eid <- lookup "id" (uriParams uri),
+                       eid == show (eventId event) = "event info"
                      | otherwise = "event"
           focused | eventType event `elem` ["talk","act"] = "focused"
                   | otherwise = "not-focused" :: String
@@ -123,7 +120,7 @@ eventsTable clear events uri =
                            (\nick -> toValue ("/nick/" <> nick))
                            (eventNick event)
       tr ! name (toValue anchor) !# (toValue anchor) !. (toValue (eventClass ++ " " ++ focused)) $ do
-        td !# (toValue ("id" <> show (eventId event))) !. "timestamp" $ timestamp clear uri (eventId event) (eventTimestamp event) anchor secs
+        td !# (toValue ("id" <> show (eventId event))) !. "timestamp" $ timestamp clear uri (eventId event) (eventTimestamp event) anchor
         if eventType event == "talk"
           then do td !. "nick-wrap" $ do
                     " <"
@@ -134,15 +131,14 @@ eventsTable clear events uri =
                     a ! href nickLink !. "nick" ! style color $ toHtml $ fromMaybe " " (eventNick event)
                   td !. "text" $ linkify $ eventText event
 
-timestamp :: Bool -> URI -> Int -> ZonedTime -> String -> String -> Html
-timestamp clear puri eid t anchor secs =
+timestamp :: Bool -> URI -> Int -> ZonedTime -> String -> Html
+timestamp clear puri eid t anchor =
   a ! hrefURIWithHash uri anchor $ toHtml $ show t
 
   where uri = updateUrlParam "id" (show eid)
-                                  (updateUrlParam "timestamp" secs
-                                                  (if clear
-                                                      then clearUrlQueries puri
-                                                      else puri))
+                                  (if clear
+                                      then clearUrlQueries puri
+                                      else puri)
 
 allPdfs :: URI -> Channel -> [(Int,ZonedTime,Text)] -> Html
 allPdfs uri channel lines' = do
@@ -154,10 +150,10 @@ allPdfs uri channel lines' = do
           "← Browse all links in context"
       let urls = sortBy (flip (comparing fst))
                $ map (length &&& id)
-               $ groupBy (on (==) (\(_,_,url) -> url))
-               $ sortBy (comparing (\(_,_,url) -> url))
+               $ groupBy (on (==) (\(_,url) -> url))
+               $ sortBy (comparing (\(_,url) -> url))
                $ concat
-               $ map (\(id',time',text) -> map (id',time',) . filter (isSuffixOf ".pdf") . map show . lefts . explodeLinks $ text)
+               $ map (\(id',_,text) -> map (id',) . filter (isSuffixOf ".pdf") . map show . lefts . explodeLinks $ text)
                $ lines'
       table !. "table" $ do
         tr $ do
@@ -166,17 +162,16 @@ allPdfs uri channel lines' = do
         forM_ urls $ \(i,urls') -> do
           tr $ do
             td (toHtml (show i))
-            forM_ (take 1 urls') $ \(_,_,url) ->
+            forM_ (take 1 urls') $ \(_,url) ->
               td $ do
                 a ! A.href (toValue url) ! target "_blank" $ toHtml url
                 " — "
                 a ! A.href (toValue ("https://ircbrowse.tomsmeding.com/browse/" ++ showChan channel ++ "?q=" ++ url)) $
                   "Search results"
                 " — Context"; (if length urls' == 1 then "" else "s"); ": "
-                forM_ (take 30 (zip [1..] urls')) $ \(j,(i',t,_)) -> do
-                  let secs = formatTime defaultTimeLocale "%s" (zonedTimeToUTC t)
+                forM_ (take 30 (zip [1..] urls')) $ \(j,(i',_)) -> do
                   a ! A.href (toValue ("/browse/" ++ showChan channel ++ "?id=" ++ show i' ++
-                                      "&timestamp=" ++ secs ++ "#t" ++ secs)) $
+                                      "#trid" ++ show i')) $
                    toHtml (show j)
                   " "
                 when (length urls' > 30) $ " …"

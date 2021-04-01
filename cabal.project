@@ -1,1 +1,1 @@
-packages: . upstream/clogparse upstream/snap-app upstream/snap-core
+packages: . upstream/clogparse upstream/snap-app upstream/snap-core tools

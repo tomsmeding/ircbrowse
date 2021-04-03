@@ -44,7 +44,7 @@ serve config state pool = route routes where
            ,("/pdfs/:channel",run C.pdfs)
            ,("/stats/:channel",run C.stats)
            ,("/calendar/:channel",run C.calendar)
-           ,("/:channel",run C.stats)
+           ,("/:channel",run C.rootfile)
            ,("/selection/:channel",run C.browseSpecified)
            -- ,("/export/:filename",run C.export)
            ,("/perfstats",run C.perfStats)

@@ -15,3 +15,4 @@ sphinx.conf
 static/exports
 .stack-work
 stack.yaml.lock
+google*.html

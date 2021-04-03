@@ -13,14 +13,14 @@ import           Ircbrowse.Monads
 import           Ircbrowse.PerfStats (currentPerfStats)
 import           Ircbrowse.Types
 import           Ircbrowse.Types.Import
-import           Ircbrowse.View.Browse as V
-import           Ircbrowse.View.Calendar as V
-import           Ircbrowse.View.NickCloud as V
-import           Ircbrowse.View.Nicks as V
-import           Ircbrowse.View.Overview as V
-import           Ircbrowse.View.PerfStats as V
-import           Ircbrowse.View.Profile as V
--- import           Ircbrowse.View.Social as V
+import qualified Ircbrowse.View.Browse as V
+import qualified Ircbrowse.View.Calendar as V
+import qualified Ircbrowse.View.NickCloud as V
+import qualified Ircbrowse.View.Nicks as V
+import qualified Ircbrowse.View.Overview as V
+import qualified Ircbrowse.View.PerfStats as V
+import qualified Ircbrowse.View.Profile as V
+-- import qualified Ircbrowse.View.Social as V
 
 import           Data.ByteString (ByteString)
 import           Data.Text (Text)
@@ -30,6 +30,9 @@ import           Safe
 import           Snap.App
 import           Snap.App.Cache
 import           Snap.App.RSS
+import           Snap.Util.FileServe (serveFileAs)
+import           System.FilePath ((</>))
+import           System.Directory (doesFileExist)
 import           Text.Blaze.Html.Renderer.Text
 import           Text.Blaze.Pagination
 
@@ -44,6 +47,25 @@ overview :: Controller Config PState ()
 overview = do
   viewCached Overview $ do
     return $ V.overview
+
+rootfile :: Controller Config PState ()
+rootfile = do
+  queryfile <- getString "channel" ""
+  if isGoogleOwnershipFile queryfile
+      then do
+        let fpath = "static" </> queryfile
+        exists <- liftIO $ doesFileExist fpath
+        if exists
+            then serveFileAs "text/html" fpath
+            else stats
+      else stats
+  where
+    isGoogleOwnershipFile :: String -> Bool
+    isGoogleOwnershipFile name =
+        case stripPrefix "google" name >>= stripSuffix ".html" of
+          Just mid | all isHexDigit mid -> True
+          _ -> False
+    stripSuffix suf s = reverse <$> stripPrefix (reverse suf) (reverse s)
 
 stats :: Controller Config PState ()
 stats = do

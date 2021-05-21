@@ -24,11 +24,13 @@ overview =
       row $
         span12 $ do
           h1 "IRC Browse"
-          p "Choose the channel:"
-          forM_ [toEnum 0 ..] $ \(chan) ->
-            h2 $
-              a ! href (toValue ("/browse/" ++ showChan chan)) $
-                do toHtml (prettyChan chan)
+          p "Logs for some selected IRC channels."
+          forM_ [toEnum 0 ..] $ \netw -> do
+            h2 $ toHtml (showNetwork netw)
+            forM_ [toEnum 0 ..] $ \chan ->
+              h3 $
+                a ! href (toValue ("/browse/" ++ showChan chan)) $
+                  do toHtml (prettyChan chan)
     footer
 
 statsOverview :: Channel -> Range -> Stats -> Html

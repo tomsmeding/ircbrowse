@@ -3,11 +3,15 @@
 module Ircbrowse.Config (getConfig) where
 
 import Ircbrowse.Types
+import Ircbrowse.Types.Import (showNetwork)
 
+import Control.Monad (when)
 import Data.ConfigFile
+import Data.List (intercalate, sort)
 import Database.PostgreSQL.Simple (ConnectInfo(..))
 import qualified Data.Text as T
 import Network.Mail.Mime
+import System.Exit (die)
 
 getConfig :: FilePath -> IO Config
 getConfig conf = do
@@ -23,7 +27,7 @@ getConfig conf = do
         cache  <- get c "WEB" "cache"
         admin    <- get c "ADDRESSES" "admin"
         siteaddy <- get c "ADDRESSES" "site_addy"
-        ldir <- get c "IMPORT" "log_dir"
+        logdirs <- options' c "LOGDIRS"
 
         return Config {
            configPostgres = ConnectInfo pghost (read pgport) pguser pgpass pgdb
@@ -31,8 +35,19 @@ getConfig conf = do
          , configAdmin = Address Nothing (T.pack admin)
          , configSiteAddy = Address Nothing (T.pack siteaddy)
          , configCacheDir = cache
-         , configLogDir = ldir
+         , configLogDirs = logdirs
          }
   case config of
     Left cperr -> error $ show cperr
-    Right config -> return config
+    Right config -> do
+      when (sort (map fst (configLogDirs config)) /= sort (map showNetwork [toEnum 0 ..])) $
+        die ("Configuration file does not contain a log directory for all networks (" ++
+                intercalate  ", " (map showNetwork [toEnum 0 ..]) ++ ")!")
+      return config
+  where
+    options' :: Get_C a
+             => ConfigParser -> SectionSpec -> Either CPError [(OptionSpec, a)]
+    options' cp sec = do
+        keys <- options cp sec
+        values <- mapM (get cp sec) keys
+        return (zip keys values)

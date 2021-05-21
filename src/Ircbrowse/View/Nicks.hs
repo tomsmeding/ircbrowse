@@ -49,4 +49,4 @@ showChans :: Html
 showChans =
   htmlCommasAnd $ flip map [toEnum 0 ..] $ \chan ->
     a ! href (toValue ("/browse/" <> T.pack (showChan chan))) $
-      toHtml $ "#" ++ showChan chan
+      toHtml $ prettyChanWithNetwork chan

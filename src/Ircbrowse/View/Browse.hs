@@ -27,10 +27,10 @@ import qualified Text.Blaze.Html5.Attributes as A
 import           Text.Links
 
 browse :: Channel -> URI -> [Event] -> PN -> Maybe Text -> Html
-browse channel = browser True ("Browse #" <> T.pack (showChan channel)) channel $ mempty
+browse channel = browser True ("Browse " <> T.pack (prettyChan channel)) channel $ mempty
 
 pdfs :: Channel -> URI -> [Event] -> PN -> Maybe Text -> Html
-pdfs channel = browser False ("PDFs linked in #" <> T.pack (showChan channel)) channel $ do
+pdfs channel = browser False ("PDFs linked in " <> T.pack (prettyChan channel)) channel $ do
   p $ a ! A.href (toValue ("/pdfs/" ++ showChan channel ++ "/unique")) $ do
     "Show unique PDF links →"
 
@@ -176,4 +176,4 @@ allPdfs uri channel lines' = do
                   " "
                 when (length urls' > 30) $ " …"
 
-  where title' = ("Unique PDFs linked in #" <> T.pack (showChan channel))
+  where title' = ("Unique PDFs linked in " <> T.pack (prettyChan channel))

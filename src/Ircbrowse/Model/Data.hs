@@ -18,7 +18,7 @@ generateData = do
     exec ["delete from conversation_by_year"] ()
     exec ["delete from general_activity_by_year"] ()
     forM_ [toEnum 0..] $ \channel -> do
-      io (putStrLn ("Generating data for #" ++ showChan channel ++ " ..."))
+      io (putStrLn ("Generating data for " ++ prettyChanWithNetwork channel ++ " ..."))
       let cid = showChanInt channel
 
       io (putStrLn ("  Generating stats ..."))

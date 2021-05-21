@@ -35,7 +35,7 @@ overview =
 
 statsOverview :: Channel -> Range -> Stats -> Html
 statsOverview channel range stats = do
-  template "overview" ("IRC Browse: #" <> pack (showChan channel)) cloudScripts $ do
+  template "overview" ("IRC Browse: " <> pack (prettyChan channel)) cloudScripts $ do
     channelNav channel
     container $ do
       row $ do

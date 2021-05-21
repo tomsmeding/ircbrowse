@@ -132,4 +132,4 @@ logsLink nick = do
   "Search logs for this nick: "
   htmlCommas $ flip map [toEnum 0 ..] $ \chan ->
     a ! href (toValue ("/browse/" <> T.pack (showChan chan) <> "?q=" <> nick)) $
-      toHtml $ "#" ++ showChan chan
+      toHtml $ prettyChanWithNetwork chan

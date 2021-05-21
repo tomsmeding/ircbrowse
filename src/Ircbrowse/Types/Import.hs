@@ -71,6 +71,7 @@ data Channel
 
 -- == Liberachat channels ==
   | LcHaskell
+  | LcXMonad
   deriving (Eq, Enum, Bounded)
 
 data ChanInfo =
@@ -109,6 +110,7 @@ infoList =
     -- ,(ProjectM36, ChanInfo Freenode "#project-m36" "project-m36" 26)
     ,(XMonad, ChanInfo Freenode "#xmonad" "xmonad" 27)
     ,(LcHaskell, ChanInfo Liberachat "#haskell" "lchaskell" 28)
+    ,(LcXMonad, ChanInfo Liberachat "#xmonad" "lcxmonad" 29)
     ]
 
 infoTable :: V.Vector ChanInfo

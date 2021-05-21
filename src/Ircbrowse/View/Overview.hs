@@ -27,7 +27,7 @@ overview =
           p "Logs for some selected IRC channels."
           forM_ [toEnum 0 ..] $ \netw -> do
             h2 $ toHtml (showNetwork netw)
-            forM_ [toEnum 0 ..] $ \chan ->
+            forM_ (channelsForNetwork netw) $ \chan ->
               h3 $
                 a ! href (toValue ("/browse/" ++ showChan chan)) $
                   do toHtml (prettyChan chan)

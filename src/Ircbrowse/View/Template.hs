@@ -23,7 +23,11 @@ template name thetitle innerhead innerbody = do
 
 channelNav :: Channel -> Html
 channelNav channel =
-  div !. "navbar navbar-static-top navbar-inverse" $
+  div !. "navbar navbar-static-top navbar-inverse" $ do
+    -- Invisible channel id element for use in link.js
+    div !# "chan-id" ! style "display: none" $
+      toHtml (showChan channel)
+
     div !. "navbar-inner" $ do
       div !. "container" $ do
         a !. "brand" ! href "/" $ "IRCBrowse"

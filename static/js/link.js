@@ -2,7 +2,7 @@ $(function(){
   var link = $('<a href="javascript:"></a>').addClass('link').text('Link');
   var brand = $('.brand').parent().append(link);
   var container = $('<div class="link-container"></div>');
-  var url = 'https://ircbrowse.tomsmeding.com/selection/' + $('.nav li').first().text().replace(/#/g,'');
+  var url = 'https://ircbrowse.tomsmeding.com/selection/' + $('#chan-id').text();
   var events;
   var val = $.cookie('selected-events');
   if (val) {

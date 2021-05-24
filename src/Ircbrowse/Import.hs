@@ -37,10 +37,11 @@ import           System.IO.Error (isDoesNotExistError)
 --     putStrLn $ "Done."
 --     removeFile file
 
--- | Import most recent logs all available channels.
+-- | Import most recent logs for all available channels.
 importRecent :: Bool -> Config -> Pool -> Maybe String -> IO ()
 importRecent quick config pool mThisChan = do
   forM_ (filter (\c->maybe True (==showChan c) mThisChan) [toEnum 0..]) $ \channel -> do
+    let network = chanNetwork channel
     putStrLn $ "Importing channel: " ++ showChan channel
     v <- newIORef []
     runDB config () pool $ do
@@ -65,7 +66,10 @@ importRecent quick config pool mThisChan = do
           importChannel lastdate config pool (addDays 1 (utctDay lastdate)) channel False
         putStrLn $ "Imported channel " ++ showChan channel
       _ -> do
-        logs <- fmap (sort) (catchJust (\e -> if isDoesNotExistError e then Just () else Nothing) (getDirectoryContents (configLogDir config </> prettyChan channel)) (const (return [])))
+        logs <- sort <$>
+                    catchJust (\e -> if isDoesNotExistError e then Just () else Nothing)
+                              (getDirectoryContents (configLogDirFor config network </> prettyChan channel))
+                              (const (return []))
         case find (isInfixOf "-") logs of
           Nothing -> putStrLn $ "Unable to get last import time, or find the first log of this channel: " ++ showChan channel
           Just fp ->
@@ -94,7 +98,7 @@ importChannel :: UTCTime -> Config -> Pool -> Day -> Channel -> Bool -> IO ()
 importChannel last config pool day channel frst = do
   mtmp <- copyLog channel day
   case mtmp of
-    Nothing -> putStrLn ("Nothing to import right now for #" ++ showChan channel)
+    Nothing -> putStrLn ("Nothing to import right now for " ++ prettyChanWithNetwork channel)
     Just tmp -> do let db = runDB config () pool
                    db $ migrate False versions
                    db $ importFile last channel config tmp frst
@@ -105,7 +109,7 @@ importChannel last config pool day channel frst = do
           tmp <- getTemporaryDirectory
 
           let tmpfile = tmp </> prettyChan chan ++ "_" ++ unmakeDay day ++ ".log"
-              target = configLogDir config ++ fp
+              target = configLogDirFor config (chanNetwork chan) ++ fp
           putStrLn $ "Importing from file " ++ target
           exists <- doesFileExist target
           if exists

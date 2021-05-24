@@ -26,7 +26,7 @@ startYear = 2001
 
 channel :: Channel -> Html
 channel channel = do
-  template "channel" (T.pack ("#" ++ showChan channel)) (return ()) $ do
+  template "channel" (T.pack (prettyChan channel)) (return ()) $ do
     channelNav channel
     container $
       row $ span12 $ p "Choose from the menu!"
@@ -34,7 +34,7 @@ channel channel = do
 
 calendar :: Day -> Day -> Channel -> Html
 calendar firstDay today channel =
-  template "calendar" (T.pack ("#" ++ showChan channel)) (return ()) $ do
+  template "calendar" (T.pack (prettyChan channel)) (return ()) $ do
       channelNav channel
       container $ do
         forM_ (years firstDay today) $ \year ->

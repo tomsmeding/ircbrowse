@@ -22,8 +22,14 @@ data Config = Config
   , configAdmin           :: !Address
   , configSiteAddy        :: !Address
   , configCacheDir        :: !FilePath
-  , configLogDir          :: !FilePath
+  , configLogDirs         :: ![(String, FilePath)]
   }
+
+configLogDirFor :: Config -> Network -> FilePath
+configLogDirFor cfg netw =
+    case lookup (showNetwork netw) (configLogDirs cfg) of
+      Just fp -> fp
+      Nothing -> error ("No irc log directory specified in config for network " ++ showNetwork netw)
 
 instance AppConfig Config where
   getConfigDomain = configDomain

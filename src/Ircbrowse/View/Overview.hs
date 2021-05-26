@@ -16,6 +16,7 @@ import Ircbrowse.View.Template
 
 import Control.Arrow
 import Data.Text (pack)
+import qualified Text.Blaze.Html5 as Html5
 
 overview :: Html
 overview =
@@ -31,6 +32,18 @@ overview =
               h3 $
                 a ! href (toValue ("/browse/" ++ showChan chan)) $
                   do toHtml (prettyChan chan)
+            when (netw == Freenode) $ do
+              details $ do
+                  Html5.summary $ small "Looking for #haskell?"
+                  p $ do
+                    "The "
+                    code "#haskell"
+                    " channel on freenode is currently disabled in IRCBrowse. If you want to see the logs, please ask in "
+                    code "#haskell"
+                    " on"
+                    code "irc.libera.chat"
+                    "."
+
     footer
 
 statsOverview :: Channel -> Range -> Stats -> Html

@@ -81,7 +81,7 @@ activeHours' nick recent (Range from to) = do
                   ,"AND text LIKE '@remember %'"
                   ,"AND REGEXP_REPLACE(text,'^@remember ([^ ]+).*',E'\\\\1') = ?"
                   ,"ORDER BY timestamp DESC"]
-                  (idxNum Haskell,recent,from,to,nick)
+                  (idxNum LcHaskell,recent,from,to,nick)
   karmap <- wrapTimed "activeHours-q5" $
             single ["select count(*) from event where text like ?"]
                    (Only (nick <> "++%"))

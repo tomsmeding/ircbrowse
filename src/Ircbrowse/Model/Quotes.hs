@@ -20,6 +20,6 @@ getRecentQuotes n = do
         ,"text LIKE '@remember %'"
         ,"ORDER BY timestamp DESC"
         ,"LIMIT ?"]
-        (showChanInt Haskell
-        ,idxNum Haskell
+        (showChanInt LcHaskell
+        ,idxNum LcHaskell
         ,n)

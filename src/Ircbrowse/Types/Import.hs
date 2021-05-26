@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 
 module Ircbrowse.Types.Import (
-    Channel(Haskell),
+    Channel(LcHaskell),
     Network(Freenode),
     channelsForNetwork,
     showNetwork,
@@ -41,7 +41,7 @@ showNetwork = niShow . lookupNetworkInfo
 -- | Possible supported channels.
 data Channel
 -- == Original Freenode channels ==
-  = Haskell
+--  = Haskell
 --  | Lisp
 --  | HaskellGame
 --  | Diagrams
@@ -67,7 +67,7 @@ data Channel
 --  | CakeML
 --  | LibReviews
 --  | ProjectM36
-  | XMonad
+  = XMonad
 
 -- == Liberachat channels ==
   | LcHaskell
@@ -82,7 +82,7 @@ data ChanInfo =
 
 infoList :: [(Channel, ChanInfo)]
 infoList =
-    [(Haskell, ChanInfo Freenode "#haskell" "haskell" 1)
+    -- [(Haskell, ChanInfo Freenode "#haskell" "haskell" 1)
     -- ,(Lisp, ChanInfo Freenode "#lisp" "lisp" 2)
     -- ,(HaskellGame, ChanInfo Freenode "#haskell-game" "haskell-game" 3)
     -- ,(Diagrams, ChanInfo Freenode "#diagrams" "diagrams" 4)
@@ -108,7 +108,7 @@ infoList =
     -- ,(CakeML, ChanInfo Freenode "#cakeml" "cakeml" 24)
     -- ,(LibReviews, ChanInfo Freenode "#lib.reviews" "lib.reviews" 25)
     -- ,(ProjectM36, ChanInfo Freenode "#project-m36" "project-m36" 26)
-    ,(XMonad, ChanInfo Freenode "#xmonad" "xmonad" 27)
+    [(XMonad, ChanInfo Freenode "#xmonad" "xmonad" 27)
     ,(LcHaskell, ChanInfo Liberachat "#haskell" "lchaskell" 28)
     ,(LcXMonad, ChanInfo Liberachat "#xmonad" "lcxmonad" 29)
     ]

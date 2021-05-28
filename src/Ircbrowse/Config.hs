@@ -7,7 +7,7 @@ import Ircbrowse.Types.Import (showNetwork)
 
 import Control.Monad (when)
 import Data.ConfigFile
-import Data.List (intercalate, sort)
+import Data.List (intercalate, sort, (\\))
 import Database.PostgreSQL.Simple (ConnectInfo(..))
 import qualified Data.Text as T
 import Network.Mail.Mime
@@ -40,9 +40,11 @@ getConfig conf = do
   case config of
     Left cperr -> error $ show cperr
     Right config -> do
-      when (sort (map fst (configLogDirs config)) /= sort (map showNetwork [toEnum 0 ..])) $
+      let providedNetworks = sort (map fst (configLogDirs config))
+          knownNetworks = sort (map showNetwork [toEnum 0 ..])
+      when (not . null $ knownNetworks \\ providedNetworks) $
         die ("Configuration file does not contain a log directory for all networks (" ++
-                intercalate  ", " (map showNetwork [toEnum 0 ..]) ++ ")!")
+                intercalate ", " (map showNetwork [toEnum 0 ..]) ++ ")!")
       return config
   where
     options' :: Get_C a

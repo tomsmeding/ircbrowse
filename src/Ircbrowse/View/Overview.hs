@@ -32,17 +32,16 @@ overview =
               h3 $
                 a ! href (toValue ("/browse/" ++ showChan chan)) $
                   do toHtml (prettyChan chan)
-            when (netw == Freenode) $ do
-              details $ do
-                  Html5.summary $ small "Looking for #haskell?"
-                  p $ do
-                    "The "
-                    code "#haskell"
-                    " channel on freenode is currently disabled in IRCBrowse. If you want to see the logs, please ask in "
-                    code "#haskell"
-                    " on"
-                    code "irc.libera.chat"
-                    "."
+          details $ do
+            Html5.summary $ small "Looking for Freenode?"
+            p $ do
+              "IRCBrowse is currently not in #haskell or #xmonad on Freenode because of an ongoing migration to "
+              code "libera.chat"
+              ". To see collected Freenode logs, please ask in "
+              code "#haskell"
+              " on "
+              code "irc.libera.chat"
+              "."
 
     footer
 

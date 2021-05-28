@@ -2,7 +2,7 @@
 
 module Ircbrowse.Types.Import (
     Channel(LcHaskell),
-    Network(Freenode),
+    Network,
     channelsForNetwork,
     showNetwork,
     chanNetwork, prettyChan, prettyChanWithNetwork, showChan, showChanInt, parseChan, idxNum
@@ -11,7 +11,9 @@ module Ircbrowse.Types.Import (
 import Data.List (find)
 import qualified Data.Vector as V
 
-data Network = Freenode | Liberachat
+data Network
+--  = Freenode
+  = Liberachat
   deriving (Eq, Enum, Bounded)
 
 data NetwInfo =
@@ -19,8 +21,8 @@ data NetwInfo =
 
 networkInfoList :: [(Network, NetwInfo)]
 networkInfoList =
-    [(Freenode, NetwInfo "freenode")
-    ,(Liberachat, NetwInfo "liberachat")]
+    -- [(Freenode, NetwInfo "freenode")
+    [(Liberachat, NetwInfo "liberachat")]
 
 networkInfoTable :: V.Vector NetwInfo
 networkInfoTable =
@@ -108,8 +110,8 @@ infoList =
     -- ,(CakeML, ChanInfo Freenode "#cakeml" "cakeml" 24)
     -- ,(LibReviews, ChanInfo Freenode "#lib.reviews" "lib.reviews" 25)
     -- ,(ProjectM36, ChanInfo Freenode "#project-m36" "project-m36" 26)
-    [(XMonad, ChanInfo Freenode "#xmonad" "xmonad" 27)
-    ,(LcHaskell, ChanInfo Liberachat "#haskell" "lchaskell" 28)
+    -- [(XMonad, ChanInfo Freenode "#xmonad" "xmonad" 27)
+    [(LcHaskell, ChanInfo Liberachat "#haskell" "lchaskell" 28)
     ,(LcXMonad, ChanInfo Liberachat "#xmonad" "lcxmonad" 29)
     ]
 

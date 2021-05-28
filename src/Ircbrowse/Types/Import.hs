@@ -69,10 +69,10 @@ data Channel
 --  | CakeML
 --  | LibReviews
 --  | ProjectM36
-  = XMonad
+--  = XMonad
 
 -- == Liberachat channels ==
-  | LcHaskell
+  = LcHaskell
   | LcXMonad
   deriving (Eq, Enum, Bounded)
 

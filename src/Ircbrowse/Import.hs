@@ -72,7 +72,7 @@ importRecent quick config pool mThisChan = do
           -- Only consider days for which we actually have logs, and don't do
           -- everything in one go.
           filterMmax 50 (\day -> doesFileExist (logFileName config channel day)) $
-            takeWhile (< today) [addDays i (utctDay lastdate) | i <- [0..]]
+            takeWhile (<= today) [addDays i (utctDay lastdate) | i <- [0..]]
         putStrLn $ "Importing days: " ++ show intermediateDays
         forM_ intermediateDays $ \day ->
           importChannel lastdate config pool day channel False

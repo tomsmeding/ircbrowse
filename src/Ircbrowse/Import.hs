@@ -1,5 +1,6 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE PatternGuards #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE OverloadedStrings #-}
 
@@ -40,7 +41,16 @@ import           System.IO.Error (isDoesNotExistError)
 -- | Import most recent logs for all available channels.
 importRecent :: Bool -> Config -> Pool -> Maybe String -> IO ()
 importRecent quick config pool mThisChan = do
-  forM_ (filter (\c->maybe True (==showChan c) mThisChan) [toEnum 0..]) $ \channel -> do
+  channelsToImport <-
+      case mThisChan of
+        Just thisChan
+          | [chan] <- filter ((== thisChan) . showChan) [toEnum 0 ..]
+          -> return [chan]
+          | otherwise
+          -> do putStrLn ("Channel not found: " ++ thisChan)
+                return []
+        Nothing -> return $ filter (networkIsActive . chanNetwork) [toEnum 0 ..]
+  forM_ channelsToImport $ \channel -> do
     let network = chanNetwork channel
     putStrLn $ "Importing channel: " ++ showChan channel
     v <- newIORef []
@@ -84,6 +94,7 @@ importRecent quick config pool mThisChan = do
     runDB PState config pool $ do
        resetCacheModel (BrowseToday channel "recent")
        resetCacheModel (BrowseToday channel "everything")
+
   unless quick $ do
     putStrLn "Running ANALYZE ..."
     runDB config () pool $ void $ exec ["ANALYZE event_order_index"] ()

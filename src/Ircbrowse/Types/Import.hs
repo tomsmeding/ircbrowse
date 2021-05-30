@@ -4,7 +4,7 @@ module Ircbrowse.Types.Import (
     Channel(LcHaskell),
     Network,
     channelsForNetwork,
-    showNetwork,
+    showNetwork, networkIsActive,
     chanNetwork, prettyChan, prettyChanWithNetwork, showChan, showChanInt, parseChan, idxNum
 ) where
 
@@ -12,17 +12,18 @@ import Data.List (find)
 import qualified Data.Vector as V
 
 data Network
---  = Freenode
-  = Liberachat
+  = Freenode
+  | Liberachat
   deriving (Eq, Enum, Bounded)
 
 data NetwInfo =
-    NetwInfo { niShow :: String }
+    NetwInfo { niShow :: String
+             , niActive :: Bool }
 
 networkInfoList :: [(Network, NetwInfo)]
 networkInfoList =
-    -- [(Freenode, NetwInfo "freenode")
-    [(Liberachat, NetwInfo "liberachat")]
+    [(Freenode, NetwInfo "freenode" False)
+    ,(Liberachat, NetwInfo "liberachat" True)]
 
 networkInfoTable :: V.Vector NetwInfo
 networkInfoTable =
@@ -40,10 +41,13 @@ lookupNetworkInfo netw = networkInfoTable V.! fromEnum netw
 showNetwork :: Network -> String
 showNetwork = niShow . lookupNetworkInfo
 
+networkIsActive :: Network -> Bool
+networkIsActive = niActive . lookupNetworkInfo
+
 -- | Possible supported channels.
 data Channel
 -- == Original Freenode channels ==
---  = Haskell
+  = Haskell
 --  | Lisp
 --  | HaskellGame
 --  | Diagrams
@@ -69,10 +73,10 @@ data Channel
 --  | CakeML
 --  | LibReviews
 --  | ProjectM36
---  = XMonad
+  | XMonad
 
 -- == Liberachat channels ==
-  = LcHaskell
+  | LcHaskell
   | LcXMonad
   deriving (Eq, Enum, Bounded)
 
@@ -84,7 +88,7 @@ data ChanInfo =
 
 infoList :: [(Channel, ChanInfo)]
 infoList =
-    -- [(Haskell, ChanInfo Freenode "#haskell" "haskell" 1)
+    [(Haskell, ChanInfo Freenode "#haskell" "haskell" 1)
     -- ,(Lisp, ChanInfo Freenode "#lisp" "lisp" 2)
     -- ,(HaskellGame, ChanInfo Freenode "#haskell-game" "haskell-game" 3)
     -- ,(Diagrams, ChanInfo Freenode "#diagrams" "diagrams" 4)
@@ -110,8 +114,8 @@ infoList =
     -- ,(CakeML, ChanInfo Freenode "#cakeml" "cakeml" 24)
     -- ,(LibReviews, ChanInfo Freenode "#lib.reviews" "lib.reviews" 25)
     -- ,(ProjectM36, ChanInfo Freenode "#project-m36" "project-m36" 26)
-    -- [(XMonad, ChanInfo Freenode "#xmonad" "xmonad" 27)
-    [(LcHaskell, ChanInfo Liberachat "#haskell" "lchaskell" 28)
+    ,(XMonad, ChanInfo Freenode "#xmonad" "xmonad" 27)
+    ,(LcHaskell, ChanInfo Liberachat "#haskell" "lchaskell" 28)
     ,(LcXMonad, ChanInfo Liberachat "#xmonad" "lcxmonad" 29)
     ]
 

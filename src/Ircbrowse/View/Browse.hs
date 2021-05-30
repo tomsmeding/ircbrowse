@@ -48,6 +48,11 @@ browser _search title' channel extra uri events pn q' =
     channelNav channel
     containerFluid $ do
       {-when search $ searchForm q'-}
+      when (not (networkIsActive (chanNetwork channel))) $
+        p $ do
+          "Note: This channel on "
+          toHtml $ showNetwork (chanNetwork channel)
+          " is currently not being logged anymore. The logs are reproduced here for posterity."
       extra
       if null events && isJust q'
          then noResults

@@ -16,7 +16,6 @@ import Ircbrowse.View.Template
 
 import Control.Arrow
 import Data.Text (pack)
-import qualified Text.Blaze.Html5 as Html5
 
 overview :: Html
 overview =
@@ -32,16 +31,6 @@ overview =
               h3 $
                 a ! href (toValue ("/browse/" ++ showChan chan)) $
                   do toHtml (prettyChan chan)
-          details $ do
-            Html5.summary $ small "Looking for Freenode?"
-            p $ do
-              "IRCBrowse is currently not in #haskell or #xmonad on Freenode because of an ongoing migration to "
-              code "libera.chat"
-              ". To see collected Freenode logs, please ask in "
-              code "#haskell"
-              " on "
-              code "irc.libera.chat"
-              "."
 
     footer
 

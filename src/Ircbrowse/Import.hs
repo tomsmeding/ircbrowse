@@ -68,12 +68,14 @@ importRecent quick config pool mThisChan = do
     case listToMaybe last of
       Just (Only (lastdate::UTCTime)) -> do
         putStrLn $ "Last date: " ++ show lastdate
-        putStrLn $ "Importing from day: " ++ show (utctDay lastdate)
-        when (utctDay lastdate /= today) $
-          putStrLn $ "And also day: " ++ show (addDays 1 (utctDay lastdate))
-        importChannel lastdate config pool (utctDay lastdate) channel False
-        when (utctDay lastdate /= today) $
-          importChannel lastdate config pool (addDays 1 (utctDay lastdate)) channel False
+        intermediateDays <-
+          -- Only consider days for which we actually have logs, and don't do
+          -- everything in one go.
+          filterMmax 50 (\day -> doesFileExist (logFileName config channel day)) $
+            takeWhile (< today) [addDays i (utctDay lastdate) | i <- [0..]]
+        putStrLn $ "Importing days: " ++ show intermediateDays
+        forM_ intermediateDays $ \day ->
+          importChannel lastdate config pool day channel False
         putStrLn $ "Imported channel " ++ showChan channel
       _ -> do
         logs <- sort <$>
@@ -116,11 +118,10 @@ importChannel last config pool day channel frst = do
                    void (try (removeFile tmp) :: IO (Either IOException ()))
 
   where copyLog chan day = do
-          let fp = prettyChan chan ++ "/" ++ unmakeDay day ++ ".log"
           tmp <- getTemporaryDirectory
 
           let tmpfile = tmp </> prettyChan chan ++ "_" ++ unmakeDay day ++ ".log"
-              target = configLogDirFor config (chanNetwork chan) ++ fp
+              target = logFileName config chan day
           putStrLn $ "Importing from file " ++ target
           exists <- doesFileExist target
           if exists
@@ -128,6 +129,10 @@ importChannel last config pool day channel frst = do
                               tmpfile
                      return (Just tmpfile)
              else return Nothing
+
+logFileName :: Config -> Channel -> Day -> FilePath
+logFileName config chan day =
+    configLogDirFor config (chanNetwork chan) ++ prettyChan chan ++ "/" ++ unmakeDay day ++ ".log"
 
 unmakeDay :: FormatTime t => t -> String
 unmakeDay = formatTime defaultTimeLocale "%Y-%m-%d"
@@ -241,3 +246,10 @@ importEvents channel events = do
       NoParse text -> do liftIO $ T.putStrLn $ mappend "Unable to import line: " text
                          return False
   where unNick (Nick t) = t
+
+filterMmax :: Monad m => Int -> (a -> m Bool) -> [a] -> m [a]
+filterMmax n f (x:xs) | n >= 1 = do
+  keep <- f x
+  if keep then (x :) <$> filterMmax (n-1) f xs
+          else filterMmax n f xs
+filterMmax _ _ _ = return []

@@ -9,7 +9,7 @@ import Ircbrowse.Monads
 import Ircbrowse.PerfStats (PerfStatsCtx)
 
 import Data.Text
-import Database.PostgreSQL.Simple
+import Database.PostgreSQL.Simple (ConnectInfo)
 import Database.PostgreSQL.Simple.FromRow
 import Network.Mail.Mime (Address)
 import Snap.App.Cache

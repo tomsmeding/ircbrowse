@@ -172,6 +172,16 @@ browse = do
   uri <- getMyURI
   outputText $ renderHtml $ V.browse channel uri logs pn' { pnPn = pagination } q
 
+browseTextOnly :: Controller Config PState ()
+browseTextOnly = do
+  evid <- getIntegerMaybe "id"
+  channel <- getChannel
+  -- pn <- getPagination "events"
+  -- let pn' = pn { pnResultsPerPage = Just [25,35,50,100] }
+  (pagination,logs) <- model $ getEvents channel evid pn' Nothing
+  uri <- getMyURI
+  outputText $ renderHtml $ V.browse channel uri logs pn' { pnPn = pagination } Nothing
+
 pdfs :: Controller Config PState ()
 pdfs = do
   unique <- fmap isJust (getTextMaybe "unique")

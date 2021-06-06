@@ -57,9 +57,9 @@ pagination PN{pnURI=uri, pnPn=pn@Pagination{..}, pnResultsPerPage=perPage} =
           div !. "pages" $ do
             ul !. "pages-list" $ do
               when (pnCurrentPage > 1) $ do
-                li !. "page" $ a ! hrefSet uri paramName "1" $
+                li $ a ! hrefSet uri paramName "1" $
                   "First"
-                li !. "page" $ a ! hrefSet uri paramName (show (pnCurrentPage-1)) $
+                li $ a ! hrefSet uri paramName (show (pnCurrentPage-1)) $
                   "Previous"
               let w = 10 :: Integer
                   start = max 1 (pnCurrentPage - (w // 2))
@@ -72,9 +72,9 @@ pagination PN{pnURI=uri, pnPn=pn@Pagination{..}, pnResultsPerPage=perPage} =
               when (end < pageCount) $
                 li !. "disabled" $ a "…"
               when (pnCurrentPage < pageCount) $ do
-                li !. "page" $ a ! hrefSet uri paramName (show (pnCurrentPage+1)) $
+                li $ a ! hrefSet uri paramName (show (pnCurrentPage+1)) $
                   "Next"
-                li !. "page" $ a ! hrefSet uri paramName (show pageCount) $
+                li $ a ! hrefSet uri paramName (show pageCount) $
                   "Last"
 
         paramName = param "page"
@@ -84,6 +84,6 @@ pagination PN{pnURI=uri, pnPn=pn@Pagination{..}, pnResultsPerPage=perPage} =
         pageCount = pnPageCount pn
 
 showCount :: (Show n,Integral n) => n -> String
-showCount = reverse . foldr merge "" . zip ("000,00,00,00"::String) . reverse . show where
+showCount = reverse . foldr merge "" . zip ('0' : cycle "00," :: String) . reverse . show where
   merge (f,c) rest | f == ',' = "," ++ [c] ++ rest
                    | otherwise = [c] ++ rest

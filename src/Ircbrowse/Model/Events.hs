@@ -162,3 +162,33 @@ getAllPdfs channel = do
                   ,"ORDER BY idx.id asc"]
                   (idxNum channel + 1, idxNum channel)
   return events
+
+data EventFilter
+  = EFBeforeId Int
+  | EFAfterId Int
+  deriving (Show)
+
+data FilteredEvents = FilteredEvents
+  { fevEvents :: [Event]
+  , fevRange :: (Int, Int)
+  , fevHaveMoreLeft :: Bool
+  , fevHaveMoreRight :: Bool }
+  deriving (Show)
+
+getFilteredEvents :: Channel -> EventFilter -> Int -> Model c s FilteredEvents
+getFilteredEvents channel (EFBeforeId evid) nevents = do
+  events <- reverse <$>
+    query ["SELECT idx.id,e.timestamp,e.network,e.channel,e.type,e.nick,e.text FROM event e"
+          ,"WHERE e.id = idx.origin and idx.idx < ?"
+          ,"ORDER BY e.id desc"
+          ,"LIMIT ?"]
+          (evid, nevents + 1)
+  let (range, havemore)
+        | null events = ((evid, evid-1), False)
+        | length events < nevents + 1 = ((eventId (head events), eventId (last events)), False)
+        | otherwise = ((eventId (head events), eventId (events !! (nevents-1))), True)
+  return $ FilteredEvents
+    { fevEvents = events
+    , fevRange = range
+    , fevHaveMoreLeft = havemore
+    , fevHaveMoreRight = True }  -- by assumption of the bound being a valid id

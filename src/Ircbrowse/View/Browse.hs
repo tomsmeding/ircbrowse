@@ -24,6 +24,7 @@ import           Network.URI.Params
 -- import           Prelude (id)
 -- import           Prelude (min)
 import qualified Text.Blaze.Html5.Attributes as A
+import           Text.Blaze.Pagination.Unbounded
 import           Text.Links
 
 browse :: Channel -> URI -> [Event] -> PN -> Maybe Text -> Html
@@ -33,6 +34,15 @@ pdfs :: Channel -> URI -> [Event] -> PN -> Maybe Text -> Html
 pdfs channel = browser False ("PDFs linked in " <> T.pack (prettyChan channel)) channel $ do
   p $ a ! A.href (toValue ("/pdfs/" ++ showChan channel ++ "/unique")) $ do
     "Show unique PDF links →"
+
+browseFiltered :: Channel -> URI -> [Event] -> UPN Int -> Html
+browseFiltered channel uri events upn = do
+  template "browse" ("Filter " <> T.pack (prettyChan channel)) mempty $ do
+    channelNav channel
+    containerFluid $ do
+      filteredTable channel uri events upn
+    footer
+    script ! src "https://code.jquery.com/jquery-2.1.1.min.js" $ mempty
 
 browser :: Bool
         -> Text
@@ -104,6 +114,13 @@ paginatedTable _ uri events pn' = do
   pagination pn { pnPn = (pnPn pn) { pnShowDesc = False }
                 , pnResultsPerPage = Nothing
                 }
+
+filteredTable :: Show a => Channel -> URI -> [Event] -> UPN a -> Html
+filteredTable _ uri events upn' = do
+  let upn = upn' { upnURI = deleteQueryKey "id" uri }
+  unboundedPagination upn
+  eventsTable True events uri
+  unboundedPagination upn { upnResultsPerPage = Nothing }
 
 eventsTable :: Bool -> [Event] -> URI -> Html
 eventsTable clear events uri =

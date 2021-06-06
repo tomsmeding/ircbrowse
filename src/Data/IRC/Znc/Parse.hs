@@ -1,6 +1,6 @@
-{-# LANGUAGE PatternGuards #-}
-{-# LANGUAGE ViewPatterns #-}
-module Data.IRC.Znc.Parse where
+module Data.IRC.Znc.Parse (
+    parseLog, Config(..), ircbrowseConfig
+) where
 
 import           Control.Applicative
 import qualified Control.Exception as Ex
@@ -98,7 +98,7 @@ event = F.asum
   , Act    <$ str " * " <*> nick <*  chr ' '  <*> restOfLine
   ] where
     chr  = P.word8  . fromIntegral . fromEnum
-    nick = (Nick . decode) <$> P.takeWhile (not . P.inClass " \n\r\t\v<>")
+    nick = Nick . decode <$> P.takeWhile (not . P.inClass " \n\r\t\v<>")
     userAct f x = f <$ str x <*> nick <* chr ' ' <*> restOfLine
 
 str :: String -> Parser ByteString
@@ -109,16 +109,13 @@ line adj =
   P.try (EventAt <$> (str "[" *> time adj <* str "]") <*> event)
   <|>   (NoParse <$> restOfLine)
 
-safeRead :: (Read a) => String -> Maybe a
-safeRead x | [(v,"")] <- reads x = Just v
-safeRead _ = Nothing
-
 getDay :: ParseTime t => FilePath -> t
-getDay fp = case Path.splitFileName fp of
-  (_,(drop 1 . dropWhile (/='_')) -> date) ->
-    case Time.parseTimeM False Time.defaultTimeLocale "%Y-%m-%d.log" date of
-      Just day -> day
-      Nothing -> error ("cannot parse date from filename: " ++ date)
+getDay fp =
+  let fname = snd (Path.splitFileName fp)
+      date = drop 1 (dropWhile (/= '_') fname)
+  in case Time.parseTimeM False Time.defaultTimeLocale "%Y-%m-%d.log" date of
+       Just day -> day
+       Nothing -> error ("cannot parse date from filename: " ++ date)
 
 -- | Parse a log file.
 --

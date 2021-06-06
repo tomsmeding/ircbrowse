@@ -27,7 +27,7 @@ generateData = do
 
       io (putStrLn ("  Generating PDF indexes ..."))
       exec ["delete from event_order_index where idx = (? * 1000) + 1"]
-           (Only (idxNum channel))
+           (Only (showChanInt channel))
       exec ["insert into event_order_index"
            ,"SELECT RANK() OVER(ORDER BY id desc) AS id,"
            ,"id as origin, "

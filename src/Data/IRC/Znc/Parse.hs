@@ -112,7 +112,8 @@ line adj =
 getDay :: ParseTime t => FilePath -> t
 getDay fp =
   let fname = snd (Path.splitFileName fp)
-      date = drop 1 (dropWhile (/= '_') fname)
+      -- Drop everything up to and including the underscore, if present
+      date = dropWhile (== '_') (dropWhile (/= '_') fname)
   in case Time.parseTimeM False Time.defaultTimeLocale "%Y-%m-%d.log" date of
        Just day -> day
        Nothing -> error ("cannot parse date from filename: " ++ date)

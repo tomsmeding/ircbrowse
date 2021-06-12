@@ -46,8 +46,9 @@ getFirstEventDate channel = do
                ,"ASC LIMIT 1"]
                (Only (showChanInt channel)))
 
-getEventsByOrderIds :: Channel -> [Int] -> Model c s [Event]
+getEventsByOrderIds :: Channel -> [Int] -> Model c PState [Event]
 getEventsByOrderIds channel eids = do
+  a <- reader (stateProvider . modelStateAnns)
   query ["SELECT id,timestamp,network,channel,type,nick,text"
         ,"FROM event"
         ,"WHERE id in (SELECT origin FROM event_order_index WHERE idx = ? AND id IN ("
@@ -101,18 +102,16 @@ getAllEventsByDay channel day =
        ,day
        ,day)
 
-getTimestampedEvents :: FromRow r
-                     => Channel
+getTimestampedEvents :: Channel
                      -> Integer
                      -> Pagination
-                     -> Model c s (Pagination,[r])
+                     -> Model c s (Pagination,[Event])
 getTimestampedEvents channel tid pagination = do
   getPaginatedEvents channel pagination
     { pnCurrentPage = tid `ceilDiv` pnPerPage pagination }
   where ceilDiv n d = (n + d - 1) `div` d
 
-getPaginatedEvents :: FromRow r
-                   => Channel -> Pagination -> Model c s (Pagination,[r])
+getPaginatedEvents :: Channel -> Pagination -> Model c s (Pagination,[Event])
 getPaginatedEvents channel pagination = do
   count <- single ["SELECT count FROM event_count where channel = ?"] (Only (showChanInt channel))
   events <- query ["SELECT idx.id,e.timestamp,e.network,e.channel,e.type,e.nick,e.text FROM event e,"

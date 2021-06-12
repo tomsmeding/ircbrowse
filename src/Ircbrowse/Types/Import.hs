@@ -5,7 +5,7 @@ module Ircbrowse.Types.Import (
     Network,
     channelsForNetwork,
     showNetwork, networkIsActive,
-    chanNetwork, prettyChan, prettyChanWithNetwork, showChan, showChanInt, parseChan, idxNum
+    chanNetwork, prettyChan, prettyChanWithNetwork, showChan, showChanInt, parseChan, parseChanInt, idxNum
 ) where
 
 import Data.List (find)
@@ -170,3 +170,6 @@ idxNum = (*1000) . showChanInt
 -- | Read a channel.
 parseChan :: String -> Maybe Channel
 parseChan name = fst <$> find ((== name) . ciShow . snd) infoList
+
+parseChanInt :: Int -> Maybe Channel
+parseChanInt i = fst <$> find ((== i) . ciInt . snd) infoList

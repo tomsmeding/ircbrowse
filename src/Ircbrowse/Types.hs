@@ -3,6 +3,8 @@
 
 module Ircbrowse.Types where
 
+import Data.IRC.EventID
+import {-# SOURCE #-} Data.IRC.Provider (Provider)
 import Ircbrowse.Data
 import Ircbrowse.Types.Import
 import Ircbrowse.Monads
@@ -38,7 +40,8 @@ instance CacheDir Config where
   getCacheDir = configCacheDir
 
 data PState = PState
-  { statePerfCtx :: PerfStatsCtx }
+  { statePerfCtx :: PerfStatsCtx
+  , stateProvider :: Provider }
 
 -- | Statistics.
 data Stats = Stats
@@ -122,14 +125,14 @@ showDay :: Day -> String
 showDay = formatTime defaultTimeLocale "%Y-%m-%d"
 
 data Event = Event
-  { eventId        :: !Int
+  { eventId        :: !EventId
   , eventTimestamp :: !ZonedTime
   , eventNetwork   :: !Int
   , eventChannel   :: !Int
   , eventType      :: !Text
   , eventNick      :: !(Maybe Text)
   , eventText      :: !Text
-  } deriving (Show)
+  } -- deriving (Show)
 
-instance FromRow Event where
-  fromRow = Event <$> field <*> field <*> field <*> field <*> field <*> field <*> field
+-- instance FromRow Event where
+--   fromRow = Event <$> field <*> field <*> field <*> field <*> field <*> field <*> field

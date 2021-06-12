@@ -55,7 +55,7 @@ executable ircbrowse
                      stm
   other-modules:
     Control.Monad.IO
-    Data.IRC.EventID
+    Data.IRC.EventId
     Data.IRC.Provider
     Data.IRC.Znc.Parse
     Data.String.Extra

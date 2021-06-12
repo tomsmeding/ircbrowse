@@ -3,7 +3,7 @@
 
 module Ircbrowse.Types where
 
-import Data.IRC.EventID
+import Data.IRC.EventId
 import {-# SOURCE #-} Data.IRC.Provider (Provider)
 import Ircbrowse.Data
 import Ircbrowse.Types.Import

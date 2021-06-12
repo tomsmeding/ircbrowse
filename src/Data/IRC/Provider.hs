@@ -1,7 +1,10 @@
-module Data.IRC.Provider where
+module Data.IRC.Provider (
+    module Data.IRC.Provider,
+    module Data.IRC.EventId,
+) where
 
 import qualified Data.IRC.Event as Clog
-import Data.IRC.EventID
+import Data.IRC.EventId
 import qualified Data.IRC.Znc.Parse as P
 import Ircbrowse.Types
 import Ircbrowse.Types.Import

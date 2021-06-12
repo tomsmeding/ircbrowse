@@ -1,5 +1,5 @@
 {-# LANGUAGE MultiWayIf #-}
-module Data.IRC.EventID (
+module Data.IRC.EventId (
     DayCode,
     toDayCode,
     fromDayCode,
@@ -15,7 +15,7 @@ import Data.Time
 import Data.Word
 
 
--- The ordering is chronological ordering.
+-- | The ordering is chronological ordering.
 newtype DayCode = DayCode Word32
   deriving (Show, Eq, Ord)
 
@@ -32,8 +32,9 @@ fromDayCode (DayCode code) =
                   (fromIntegral ((code `shiftR` 8) `mod` 256))
                   (fromIntegral (code `mod` 256))
 
+-- | The 'Ord' ordering is: channel, daycode, linenum
 newtype EventId = EventId Word64
-  deriving (Eq)
+  deriving (Eq, Ord)
   -- deriving (Show)
 
 packEventId :: Channel -> DayCode -> Int -> EventId

@@ -1,5 +1,6 @@
 module Ircbrowse.Model.Events where
 
+import Data.IRC.Provider
 import Database.PostgreSQL.Simple.FromRow
 import Ircbrowse.Data
 import Ircbrowse.Monads
@@ -8,28 +9,28 @@ import Ircbrowse.Types.Import
 
 import Data.Text (Text)
 import Snap.App
-import Sphinx
+-- import Sphinx
 import Text.Blaze.Pagination
 
 getEvents :: Channel -> Maybe Integer -> PN -> Maybe Text
           -> Model c s (Pagination,[Event])
 getEvents channel tid (PN _ pagination _) _q = do
   case Nothing {-q-} of
-    Just q -> do
-      result <- io $ search def
-        { sPath = "/opt/sphinx/bin/search"
-        , sConfig = "sphinx.conf"
-        , sQuery = escapeText q
-        , sOffset = fromIntegral ((pnCurrentPage pagination - 1) * pnPerPage pagination)
-        , sLimit = fromIntegral (pnPerPage pagination)
-        , sFilters = [("channel",showChanInt channel)]
-        }
-      case result of
-        Left{} -> return (pagination { pnTotal = 0 },[])
-        Right result -> do
-          results <- getEventsByIds channel (map fst (rResults result))
-          return (pagination { pnTotal = fromIntegral (rTotal result) }
-                 ,results)
+    -- Just q -> do
+    --   result <- io $ search def
+    --     { sPath = "/opt/sphinx/bin/search"
+    --     , sConfig = "sphinx.conf"
+    --     , sQuery = escapeText q
+    --     , sOffset = fromIntegral ((pnCurrentPage pagination - 1) * pnPerPage pagination)
+    --     , sLimit = fromIntegral (pnPerPage pagination)
+    --     , sFilters = [("channel",showChanInt channel)]
+    --     }
+    --   case result of
+    --     Left{} -> return (pagination { pnTotal = 0 },[])
+    --     Right result -> do
+    --       results <- getEventsByIds channel (map fst (rResults result))
+    --       return (pagination { pnTotal = fromIntegral (rTotal result) }
+    --              ,results)
     Nothing -> do
       case tid of
         Nothing -> getPaginatedEvents channel pagination
@@ -46,61 +47,66 @@ getFirstEventDate channel = do
                ,"ASC LIMIT 1"]
                (Only (showChanInt channel)))
 
-getEventsByOrderIds :: Channel -> [Int] -> Model c PState [Event]
-getEventsByOrderIds channel eids = do
-  a <- reader (stateProvider . modelStateAnns)
-  query ["SELECT id,timestamp,network,channel,type,nick,text"
-        ,"FROM event"
-        ,"WHERE id in (SELECT origin FROM event_order_index WHERE idx = ? AND id IN ("
-        ,intercalate ", " (map show eids)
-        ,")) ORDER BY id ASC"]
-        (Only (idxNum channel))
+getEventsByOrderIds :: [EventId] -> Model c PState [Event]
+getEventsByOrderIds eids = do
+  provider <- reader (stateProvider . modelStateAnns)
+  liftIO $ catMaybes <$> eventsWithIds provider (sort eids)
+  -- query ["SELECT id,timestamp,network,channel,type,nick,text"
+  --       ,"FROM event"
+  --       ,"WHERE id in (SELECT origin FROM event_order_index WHERE idx = ? AND id IN ("
+  --       ,intercalate ", " (map show eids)
+  --       ,")) ORDER BY id ASC"]
+  --       (Only (idxNum channel))
 
-getEventsByIds :: Channel -> [Int] -> Model c s [Event]
-getEventsByIds channel eids = do
-  query ["SELECT (SELECT id FROM event_order_index WHERE origin = event.id AND idx = ? limit 1),"
-        ,"timestamp,network,channel,type,nick,text"
-        ,"FROM event"
-        ,"WHERE id IN ("
-        ,intercalate ", " (map show eids)
-        ,") ORDER BY id DESC"]
-        (Only (idxNum channel))
+-- getEventsByIds :: Channel -> [Int] -> Model c s [Event]
+-- getEventsByIds channel eids = do
+--   query ["SELECT (SELECT id FROM event_order_index WHERE origin = event.id AND idx = ? limit 1),"
+--         ,"timestamp,network,channel,type,nick,text"
+--         ,"FROM event"
+--         ,"WHERE id IN ("
+--         ,intercalate ", " (map show eids)
+--         ,") ORDER BY id DESC"]
+--         (Only (idxNum channel))
 
-getEventsByDay :: Channel -> Day -> Bool -> Model c s [Event]
+getEventsByDay :: Channel -> Day -> Bool -> Model c PState [Event]
 getEventsByDay channel day everything =
   if everything
      then getAllEventsByDay channel day
      else getRecentEventsByDay channel day
 
-getRecentEventsByDay :: Channel -> Day -> Model c s [Event]
-getRecentEventsByDay channel _ = do
-  count <- single ["SELECT count FROM event_count where channel = ?"] (Only (showChanInt channel))
-  let offset = fromMaybe 0 count - limit
-  query ["SELECT idx.id,e.timestamp,e.network,e.channel,e.type,e.nick,e.text FROM event e,"
-         ,"event_order_index idx"
-         ,"WHERE e.id = idx.origin and idx.idx = ? and idx.id >= ?"
-         ,"ORDER BY e.id DESC"
-         ,"LIMIT ?"]
-         (idxNum channel
-         ,offset
-         ,limit)
+getRecentEventsByDay :: Channel -> Day -> Model c PState [Event]
+getRecentEventsByDay channel day = do
+  provider <- reader (stateProvider . modelStateAnns)
+  events <- liftIO $ eventsOnDay provider (\_ _ -> True) channel day
+  return (reverse (take 50 (reverse events)))
+  -- count <- single ["SELECT count FROM event_count where channel = ?"] (Only (showChanInt channel))
+  -- let offset = fromMaybe 0 count - limit
+  -- query ["SELECT idx.id,e.timestamp,e.network,e.channel,e.type,e.nick,e.text FROM event e,"
+  --        ,"event_order_index idx"
+  --        ,"WHERE e.id = idx.origin and idx.idx = ? and idx.id >= ?"
+  --        ,"ORDER BY e.id DESC"
+  --        ,"LIMIT ?"]
+  --        (idxNum channel
+  --        ,offset
+  --        ,limit)
+  -- where limit = 50 :: Int
 
-  where limit = 50 :: Int
-
-getAllEventsByDay :: Channel -> Day -> Model c s [Event]
-getAllEventsByDay channel day =
-  query ["SELECT (SELECT id FROM event_order_index WHERE origin = event.id AND idx = ? limit 1) as id,"
-        ,"timestamp,network,channel,type,nick,text"
-        ,"FROM event"
-        ,"WHERE channel = ?"
-        ,"AND timestamp >= ?"
-        ,"AND timestamp < (?::timestamp) + interval '1 day'"
-        ,"ORDER BY id ASC"
-        ]
-       (idxNum channel
-       ,showChanInt channel
-       ,day
-       ,day)
+getAllEventsByDay :: Channel -> Day -> Model c PState [Event]
+getAllEventsByDay channel day = do
+  provider <- reader (stateProvider . modelStateAnns)
+  liftIO $ eventsOnDay provider (\_ _ -> True) channel day
+  -- query ["SELECT (SELECT id FROM event_order_index WHERE origin = event.id AND idx = ? limit 1) as id,"
+  --       ,"timestamp,network,channel,type,nick,text"
+  --       ,"FROM event"
+  --       ,"WHERE channel = ?"
+  --       ,"AND timestamp >= ?"
+  --       ,"AND timestamp < (?::timestamp) + interval '1 day'"
+  --       ,"ORDER BY id ASC"
+  --       ]
+  --      (idxNum channel
+  --      ,showChanInt channel
+  --      ,day
+  --      ,day)
 
 getTimestampedEvents :: Channel
                      -> Integer

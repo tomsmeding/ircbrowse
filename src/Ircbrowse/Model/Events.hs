@@ -108,10 +108,8 @@ getTimestampedEvents :: FromRow r
                      -> Model c s (Pagination,[r])
 getTimestampedEvents channel tid pagination = do
   getPaginatedEvents channel pagination
-    { pnCurrentPage = if mod tid (pnPerPage pagination) == 0
-                         then tid `div` pnPerPage pagination
-                         else tid `div` pnPerPage pagination + 1
-    }
+    { pnCurrentPage = tid `ceilDiv` pnPerPage pagination }
+  where ceilDiv n d = (n + d - 1) `div` d
 
 getPaginatedEvents :: FromRow r
                    => Channel -> Pagination -> Model c s (Pagination,[r])

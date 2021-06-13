@@ -79,7 +79,7 @@ data Channel
   | LcHaskell
   | LcXMonad
   | LcKMonad
-  deriving (Eq, Enum, Bounded)
+  deriving (Eq, Ord, Enum, Bounded)
 
 data ChanInfo =
     ChanInfo { ciNetwork :: Network

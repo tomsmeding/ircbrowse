@@ -111,13 +111,13 @@ getAllEventsByDay channel day = do
 getTimestampedEvents :: Channel
                      -> Integer
                      -> Pagination
-                     -> Model c s (Pagination,[Event])
+                     -> Model c PState (Pagination,[Event])
 getTimestampedEvents channel tid pagination = do
   getPaginatedEvents channel pagination
     { pnCurrentPage = tid `ceilDiv` pnPerPage pagination }
   where ceilDiv n d = (n + d - 1) `div` d
 
-getPaginatedEvents :: Channel -> Pagination -> Model c s (Pagination,[Event])
+getPaginatedEvents :: Channel -> Pagination -> Model c PState (Pagination,[Event])
 getPaginatedEvents channel pagination = do
   count <- single ["SELECT count FROM event_count where channel = ?"] (Only (showChanInt channel))
   events <- query ["SELECT idx.id,e.timestamp,e.network,e.channel,e.type,e.nick,e.text FROM event e,"

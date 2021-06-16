@@ -52,7 +52,8 @@ executable ircbrowse
                      lifted-base,
                      monad-control,
                      containers,
-                     stm
+                     stm,
+                     deepseq
   other-modules:
     Control.Monad.IO
     Data.IRC.EventId

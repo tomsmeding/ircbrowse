@@ -1,23 +1,27 @@
 {-# LANGUAGE MultiWayIf #-}
+{-# LANGUAGE DerivingVia #-}
 module Data.IRC.EventId (
     DayCode,
-    toDayCode,
-    fromDayCode,
+    toDayCode, fromDayCode,
     EventId,
-    packEventId,
-    unpackEventId,
+    packEventId, unpackEventId,
+    serialiseEventId, deserialiseEventId,
 ) where
 
 import Ircbrowse.Types.Import
 
+import Control.DeepSeq (NFData)
+import Control.Monad (guard)
 import Data.Bits
 import Data.Time
 import Data.Word
+import Text.Read (readMaybe)
 
 
 -- | The ordering is chronological ordering.
 newtype DayCode = DayCode Word32
   deriving (Show, Eq, Ord)
+  deriving (NFData) via Word32
 
 toDayCode :: Day -> DayCode
 toDayCode day =
@@ -36,6 +40,7 @@ fromDayCode (DayCode code) =
 newtype EventId = EventId Word64
   deriving (Eq, Ord)
   -- deriving (Show)
+  deriving (NFData) via Word64
 
 packEventId :: Channel -> DayCode -> Int -> EventId
 packEventId chan (DayCode daycode) linenum =
@@ -49,6 +54,19 @@ unpackEventId (EventId code) = do
     let daycode = DayCode . fromIntegral $ (code `shiftR` (3 * 8)) `mod` (1 `shiftL` (4 * 8))
         linenum = fromIntegral $ code `mod` (1 `shiftL` (3 * 8))
     return (chan, daycode, linenum)
+
+serialiseEventId :: EventId -> String
+serialiseEventId (EventId num) = show num
+
+deserialiseEventId :: String -> Maybe EventId
+deserialiseEventId s = do
+    num <- readMaybe s
+    -- Check for a valid channel by unpacking
+    (chan, daycode, linenum) <- unpackEventId (EventId num)
+    -- Check that there aren't any excess 1-bits
+    guard (packEventId chan daycode linenum == EventId num)
+    -- The day code and line number are valid by definition, so no need to check those.
+    return (EventId num)
 
 wordCast :: (Bits i, Integral i, FiniteBits t, Integral t) => Int -> i -> t
 wordCast nbytes value =

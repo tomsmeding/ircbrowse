@@ -5,6 +5,7 @@
 
 module Ircbrowse.Server (runServer) where
 
+import           Data.IRC.Provider (makeProvider)
 import           Ircbrowse.Types
 import qualified Ircbrowse.Controllers as C
 import           Ircbrowse.PerfStats (newPerfContext, wrapTimedRoute)
@@ -18,7 +19,9 @@ runServer :: Config -> Pool -> IO ()
 runServer config pool = do
   setUnicodeLocale "en_US"
   perfctx <- newPerfContext
-  let state = PState { statePerfCtx = perfctx }
+  provider <- makeProvider config
+  let state = PState { statePerfCtx = perfctx
+                     , stateProvider = provider }
       rqPath rq = rqContextPath rq <> rqPathInfo rq  -- The URI, but then without the query
   httpServe server (wrapTimedRoute perfctx (rqPath <$> getRequest) (serve config state pool))
 

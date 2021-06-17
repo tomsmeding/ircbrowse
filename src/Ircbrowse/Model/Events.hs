@@ -1,7 +1,7 @@
 module Ircbrowse.Model.Events where
 
 import Data.IRC.Provider
-import Database.PostgreSQL.Simple.FromRow
+-- import Database.PostgreSQL.Simple.FromRow
 import Ircbrowse.Data
 import Ircbrowse.Monads
 import Ircbrowse.Types
@@ -13,7 +13,7 @@ import Snap.App
 import Text.Blaze.Pagination
 
 getEvents :: Channel -> Maybe Integer -> PN -> Maybe Text
-          -> Model c s (Pagination,[Event])
+          -> Model c PState (Pagination,[Event])
 getEvents channel tid (PN _ pagination _) _q = do
   case Nothing {-q-} of
     -- Just q -> do
@@ -119,41 +119,43 @@ getTimestampedEvents channel tid pagination = do
 
 getPaginatedEvents :: Channel -> Pagination -> Model c PState (Pagination,[Event])
 getPaginatedEvents channel pagination = do
-  count <- single ["SELECT count FROM event_count where channel = ?"] (Only (showChanInt channel))
-  events <- query ["SELECT idx.id,e.timestamp,e.network,e.channel,e.type,e.nick,e.text FROM event e,"
-                  ,"event_order_index idx"
-                  ,"WHERE e.id = idx.origin and idx.idx = ? and idx.id >= ? and idx.id < ?"
-                  ,"ORDER BY e.id asc"
-                  ,"LIMIT ?"]
-                  (idxNum channel
-                  ,offset
-                  ,offset + limit
-                  ,limit)
-  return (pagination { pnTotal = fromMaybe 0 count }
-         ,events)
+  let offset = 1 + max 0 (pnCurrentPage pagination - 1) * pnPerPage pagination
+      limit = pnPerPage pagination
+  provider <- reader (stateProvider . modelStateAnns)
+  count <- liftIO $ numChannelEvents provider channel
+  events <- liftIO $ fromMaybe [] <$> eventsFromOffset provider channel offset limit
+  -- count <- single ["SELECT count FROM event_count where channel = ?"] (Only (showChanInt channel))
+  -- events <- query ["SELECT idx.id,e.timestamp,e.network,e.channel,e.type,e.nick,e.text FROM event e,"
+  --                 ,"event_order_index idx"
+  --                 ,"WHERE e.id = idx.origin and idx.idx = ? and idx.id >= ? and idx.id < ?"
+  --                 ,"ORDER BY e.id asc"
+  --                 ,"LIMIT ?"]
+  --                 (idxNum channel
+  --                 ,offset
+  --                 ,offset + limit
+  --                 ,limit)
+  return (pagination { pnTotal = count }, events)
 
-  where offset = 1 + (max 0 (pnCurrentPage pagination - 1) * pnPerPage pagination)
-        limit = pnPerPage pagination
+getPaginatedPdfs :: Channel -> PN -> Model c PState (Pagination,[Event])
+getPaginatedPdfs _channel (PN _ pagination _) = do
+  liftIO $ putStrLn "ERROR: PDFS NOT SUPPORTED YET"
+  return (pagination { pnTotal = 0 }, [])
+  -- count <- single ["SELECT COUNT(*) FROM event_order_index WHERE idx = ?"]
+  --                 (Only (idxNum channel + 1))
+  -- events <- query ["SELECT idx.id,e.timestamp,e.network,e.channel,e.type,e.nick,e.text FROM event e,"
+  --                 ,"event_order_index idx"
+  --                 ,"WHERE e.id = idx.origin and idx.idx = ? and idx.id >= ? and idx.id < ?"
+  --                 ,"ORDER BY idx.id asc"
+  --                 ,"LIMIT ?"]
+  --                 (idxNum channel + 1
+  --                 ,offset
+  --                 ,offset + limit
+  --                 ,limit)
+  -- return (pagination { pnTotal = fromMaybe 0 count }
+  --        ,events)
 
-getPaginatedPdfs :: FromRow r
-                 => Channel -> PN -> Model c s (Pagination,[r])
-getPaginatedPdfs channel (PN _ pagination _) = do
-  count <- single ["SELECT COUNT(*) FROM event_order_index WHERE idx = ?"]
-                  (Only (idxNum channel + 1))
-  events <- query ["SELECT idx.id,e.timestamp,e.network,e.channel,e.type,e.nick,e.text FROM event e,"
-                  ,"event_order_index idx"
-                  ,"WHERE e.id = idx.origin and idx.idx = ? and idx.id >= ? and idx.id < ?"
-                  ,"ORDER BY idx.id asc"
-                  ,"LIMIT ?"]
-                  (idxNum channel + 1
-                  ,offset
-                  ,offset + limit
-                  ,limit)
-  return (pagination { pnTotal = fromMaybe 0 count }
-         ,events)
-
-  where offset = 1 + (max 0 (pnCurrentPage pagination - 1) * pnPerPage pagination)
-        limit = pnPerPage pagination
+  -- where offset = 1 + (max 0 (pnCurrentPage pagination - 1) * pnPerPage pagination)
+  --       limit = pnPerPage pagination
 
 getAllPdfs :: Channel -> Model c s [(Int,ZonedTime,Text)]
 getAllPdfs channel = do

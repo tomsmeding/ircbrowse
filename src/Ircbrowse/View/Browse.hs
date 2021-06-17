@@ -17,6 +17,7 @@ import           Ircbrowse.View.Template
 import           Control.Arrow
 import           Data.Either
 import           Data.Function
+import           Data.IRC.EventId (EventId, serialiseEventId)
 import           Data.Text (Text)
 import qualified Data.Text as T
 import           Network.URI
@@ -114,9 +115,10 @@ eventsTable :: Bool -> [Event] -> URI -> Html
 eventsTable clear events uri =
   table !. "events table" $
     forM_ events $ \event -> do
-      let anchor = "trid" ++ show (eventId event)
+      let evid = serialiseEventId (eventId event)
+          anchor = "trid" ++ evid
           eventClass | Just eid <- lookup "id" (uriParams uri),
-                       eid == show (eventId event) = "event info"
+                       eid == evid = "event info"
                      | otherwise = "event"
           focused | eventType event `elem` ["talk","act"] = "focused"
                   | otherwise = "not-focused" :: String
@@ -125,7 +127,7 @@ eventsTable clear events uri =
                            (\nick -> toValue ("/nick/" <> nick))
                            (eventNick event)
       tr ! name (toValue anchor) !# (toValue anchor) !. (toValue (eventClass ++ " " ++ focused)) $ do
-        td !# (toValue ("id" <> show (eventId event))) !. "timestamp" $ timestamp clear uri (eventId event) (eventTimestamp event) anchor
+        td !# (toValue ("id" <> evid)) !. "timestamp" $ timestamp clear uri (eventId event) (eventTimestamp event) anchor
         if eventType event == "talk"
           then do td !. "nick-wrap" $ do
                     " <"
@@ -136,11 +138,11 @@ eventsTable clear events uri =
                     a ! href nickLink !. "nick" ! style color $ toHtml $ fromMaybe " " (eventNick event)
                   td !. "text" $ linkify $ eventText event
 
-timestamp :: Bool -> URI -> Int -> ZonedTime -> String -> Html
+timestamp :: Bool -> URI -> EventId -> ZonedTime -> String -> Html
 timestamp clear puri eid t anchor =
   a ! hrefURIWithHash uri anchor $ toHtml $ show t
 
-  where uri = updateUrlParam "id" (show eid)
+  where uri = updateUrlParam "id" (serialiseEventId eid)
                                   (if clear
                                       then clearUrlQueries puri
                                       else puri)

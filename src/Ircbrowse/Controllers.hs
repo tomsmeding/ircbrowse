@@ -2,6 +2,7 @@
 
 module Ircbrowse.Controllers where
 
+import           Data.IRC.EventId (deserialiseEventId)
 import           Ircbrowse.Data
 import           Ircbrowse.Model.Events
 import           Ircbrowse.Model.Nicks
@@ -146,8 +147,8 @@ browseSpecified =
   do channel <- getChannel
      events <- getText "events"
      title <- getText "title"
-     let eids = mapMaybe (readMay . T.unpack) (T.split (==',') events)
-     events <- model (getEventsByOrderIds channel eids)
+     let eids = mapMaybe (deserialiseEventId . T.unpack) (T.split (==',') events)
+     events <- model (getEventsByOrderIds eids)
      uri <- getMyURI
      outputText (renderHtml (V.selection channel title events uri))
 

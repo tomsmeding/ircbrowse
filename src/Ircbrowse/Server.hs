@@ -15,21 +15,21 @@ import           Snap.Http.Server           hiding (Config)
 import           Snap.Util.FileServe
 
 -- | Run the server.
-runServer :: Config -> Pool -> IO ()
-runServer config pool = do
+runServer :: Config -> IO ()
+runServer config = do
   setUnicodeLocale "en_US"
   perfctx <- newPerfContext
   provider <- makeProvider config
   let state = PState { statePerfCtx = perfctx
                      , stateProvider = provider }
       rqPath rq = rqContextPath rq <> rqPathInfo rq  -- The URI, but then without the query
-  httpServe server (wrapTimedRoute perfctx (rqPath <$> getRequest) (serve config state pool))
+  httpServe server (wrapTimedRoute perfctx (rqPath <$> getRequest) (serve config state))
 
   where server = setPort 10009 defaultConfig
 
 -- | Serve the controllers.
-serve :: Config -> PState -> Pool -> Snap ()
-serve config state pool = route routes where
+serve :: Config -> PState -> Snap ()
+serve config state = route routes where
   routes = [("/js/",serveDirectory "static/js")
            ,("/css/",serveDirectory "static/css")
            ,("/browse/:channel",run C.browse)
@@ -53,4 +53,4 @@ serve config state pool = route routes where
            ,("/perfstats",run C.perfStats)
            ,("/",run C.overview)
            ]
-  run = runHandler state config pool
+  run = runHandler state config

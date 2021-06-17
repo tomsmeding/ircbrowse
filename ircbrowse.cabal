@@ -64,10 +64,10 @@ executable ircbrowse
     Ircbrowse.Config
     Ircbrowse.Controllers
     Ircbrowse.Data
-    Ircbrowse.Import
+    -- Ircbrowse.Import
     Ircbrowse.Model.Data
     Ircbrowse.Model.Events
-    Ircbrowse.Model.Migrations
+    -- Ircbrowse.Model.Migrations
     Ircbrowse.Model.Nicks
     Ircbrowse.Model.Profile
     Ircbrowse.Model.Quotes

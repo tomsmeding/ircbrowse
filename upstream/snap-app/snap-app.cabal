@@ -13,11 +13,21 @@ cabal-version:       >=1.8
 library
   ghc-options:       -O2 -Wall
   hs-source-dirs:    src
-  exposed-modules:   Snap.App, Snap.App.Types, Snap.App.Controller, Snap.App.Model, Snap.App.Migrate,
-                     Snap.App.Cache, Snap.App.XML, Snap.App.RSS,
-                     Data.Pagination, Text.Blaze.Extra, Text.Blaze.Pagination,
-                     Control.Monad.Env, Data.Monoid.Operator,
-                     Network.URI.Params
+  exposed-modules:
+    Snap.App
+    Snap.App.Types
+    Snap.App.Controller
+    -- Snap.App.Model
+    -- Snap.App.Migrate
+    Snap.App.Cache
+    Snap.App.XML
+    Snap.App.RSS
+    Data.Pagination
+    Text.Blaze.Extra
+    Text.Blaze.Pagination
+    Control.Monad.Env
+    Data.Monoid.Operator
+    Network.URI.Params
   build-depends:     base >= 4 && <5,
                      snap-core,
                      network-uri,

@@ -1,39 +1,20 @@
-{-# LANGUAGE ViewPatterns #-}
 -- | Main entry point.
 
 module Main where
 
-import Data.Maybe
-import Ircbrowse.Config
-import Ircbrowse.Import
-import Ircbrowse.Model.Data
-import Ircbrowse.Model.Migrations
-import Ircbrowse.Server
-import Ircbrowse.Types
+import Ircbrowse.Config (getConfig)
+import Ircbrowse.Server (runServer)
 
-import Snap.App
-import Snap.App.Cache
-import Snap.App.Migrate
-import System.Environment
+import System.Environment (getArgs)
+import System.Exit (die)
 
 -- | Main entry point.
 main :: IO ()
 main = do
-  cpath:action <- getArgs
-  config <- getConfig cpath
-  pool <- newPool (configPostgres config)
-  let db = runDB () config pool
-  case foldr const "" action of
-    "complete-import" ->
-      importRecent False config pool Nothing
-    "fast-import" ->
-      importRecent True config pool (listToMaybe (drop 1 action))
-    "generate-data" -> do
-      db $ migrate False versions
-      db $ generateData
-      clearCache config
-    "create-version" -> do
-      db $ migrate True versions
-    _ -> do
-      db $ migrate False versions
-      runServer config pool
+  args <- getArgs
+  case args of
+    [confpath] -> do
+        config <- getConfig confpath
+        runServer config
+    _ ->
+        die $ "Usage: ircbrowse <ircbrowse.conf>"

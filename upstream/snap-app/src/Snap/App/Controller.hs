@@ -17,7 +17,6 @@ module Snap.App.Controller
   where
 
 import Snap.Core
-import Snap.App.Model (Pool,withPoolConnection)
 import Snap.App.Types
 
 import Control.Monad.Env
@@ -34,13 +33,12 @@ import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Text.Blaze.Pagination (PN(..))
 
 -- | Run a controller handler.
-runHandler :: s -> c -> Pool -> Controller c s () -> Snap ()
-runHandler st conf pool ctrl = do
-  withPoolConnection pool $ \conn -> do
-      let state = ControllerState conf conn st
-      -- Default to HTML, can be overridden.
-      modifyResponse $ setContentType "text/html"
-      runReaderT (runController ctrl) state
+runHandler :: s -> c -> Controller c s () -> Snap ()
+runHandler st conf ctrl = do
+  let state = ControllerState conf st
+  -- Default to HTML, can be overridden.
+  modifyResponse $ setContentType "text/html"
+  runReaderT (runController ctrl) state
 
 -- | Strictly renders HTML to Text before outputting it via Snap.
 --   This ensures that any lazy exceptions are caught by the Snap

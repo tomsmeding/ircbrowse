@@ -8,7 +8,6 @@ import Ircbrowse.Types.Import (showNetwork)
 import Control.Monad (when)
 import Data.ConfigFile
 import Data.List (intercalate, sort, (\\))
-import Database.PostgreSQL.Simple (ConnectInfo(..))
 import qualified Data.Text as T
 import Network.Mail.Mime
 import System.Exit (die)
@@ -18,11 +17,6 @@ getConfig conf = do
   contents <- readFile conf
   let config = do
         c <- readstring emptyCP contents
-        pghost <- get c "POSTGRESQL" "host"
-        pgport <- get c "POSTGRESQL" "port"
-        pguser <- get c "POSTGRESQL" "user"
-        pgpass <- get c "POSTGRESQL" "pass"
-        pgdb   <- get c "POSTGRESQL" "db"
         domain <- get c "WEB" "domain"
         cache  <- get c "WEB" "cache"
         admin    <- get c "ADDRESSES" "admin"
@@ -30,8 +24,7 @@ getConfig conf = do
         logdirs <- options' c "LOGDIRS"
 
         return Config {
-           configPostgres = ConnectInfo pghost (read pgport) pguser pgpass pgdb
-         , configDomain = domain
+           configDomain = domain
          , configAdmin = Address Nothing (T.pack admin)
          , configSiteAddy = Address Nothing (T.pack siteaddy)
          , configCacheDir = cache

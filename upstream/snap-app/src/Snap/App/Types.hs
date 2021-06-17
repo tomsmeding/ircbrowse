@@ -21,14 +21,12 @@ import Control.Monad.Base         (MonadBase)
 import Control.Monad.Reader       (ReaderT,MonadReader)
 import Control.Monad.Trans        (MonadIO)
 import Control.Monad.Trans.Control(MonadBaseControl)
-import Database.PostgreSQL.Simple (Connection)
 
 import Snap.Core                  (Snap,MonadSnap)
 
 -- | The state accessible to the controller (DB/session stuff).
 data ControllerState config state = ControllerState {
     controllerStateConfig :: config
-  , controllerStateConn   :: Connection
   , controllerState       :: state
   }
 
@@ -48,8 +46,7 @@ newtype Controller config state a = Controller {
 
 -- | The state accessible to the model (just DB connection).
 data ModelState config state = ModelState {
-    modelStateConn   :: Connection
-  , modelStateAnns   :: state
+    modelStateAnns   :: state
   , modelStateConfig :: config
   }
 

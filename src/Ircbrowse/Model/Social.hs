@@ -6,15 +6,15 @@
 
 module Ircbrowse.Model.Social where
 
-import           Data.Text (Text)
-import           Snap.App
+-- import           Data.Text (Text)
+-- import           Snap.App
 
-getSocialGraph :: b -> r -> Model c s [(Text,Text,Int)]
-getSocialGraph _ _ = do
-  query ["select nick1,nick2,count"
-        ,"from nick_to_nick"
-        ,"order by count desc"]
-        ()
+-- getSocialGraph :: b -> r -> Model c s [(Text,Text,Int)]
+-- getSocialGraph _ _ = do
+--   query ["select nick1,nick2,count"
+--         ,"from nick_to_nick"
+--         ,"order by count desc"]
+--         ()
 
 -- generateGraph :: Config -> Pool -> IO ()
 -- generateGraph config pool = db $ do

@@ -3,53 +3,32 @@
 
 module Ircbrowse.Types where
 
-import Data.IRC.EventId
-import {-# SOURCE #-} Data.IRC.Provider (Provider)
+import Data.IRC.Provider (Provider)
+import Ircbrowse.Config
 import Ircbrowse.Data
 import Ircbrowse.Types.Import
+import Ircbrowse.Model.Data
 import Ircbrowse.Monads
 import Ircbrowse.PerfStats (PerfStatsCtx)
 
 import Data.Text
 -- import Database.PostgreSQL.Simple (ConnectInfo)
 -- import Database.PostgreSQL.Simple.FromRow
-import Network.Mail.Mime (Address)
 import Snap.App.Cache
 import Snap.App.Types
 
--- | Site-wide configuration.
-data Config = Config
-  { configDomain          :: !String
-  , configAdmin           :: !Address
-  , configSiteAddy        :: !Address
-  , configCacheDir        :: !FilePath
-  , configLogDirs         :: ![(String, FilePath)]
-  }
-
-configLogDirFor :: Config -> Network -> FilePath
-configLogDirFor cfg netw =
-    case lookup (showNetwork netw) (configLogDirs cfg) of
-      Just fp -> fp
-      Nothing -> error ("No irc log directory specified in config for network " ++ showNetwork netw)
-
-instance AppConfig Config where
-  getConfigDomain = configDomain
-
-instance CacheDir Config where
-  getCacheDir = configCacheDir
-
 data PState = PState
   { statePerfCtx :: PerfStatsCtx
-  , stateProvider :: Provider }
+  , stateProvider :: Provider StatData }
 
 -- | Statistics.
 data Stats = Stats
   { stEventCount         :: !Integer
   , stMsgCount           :: !Integer
   , stNickCount          :: !Integer
-  , stActiveTimes        :: ![(Integer,Integer)]
-  , stDailyActivity      :: ![(Integer,Integer)]
-  , stActiveNicks        :: ![(String,Integer)]
+  , stActiveTimes        :: ![(Int,Integer)]
+  , stDailyActivity      :: ![(Int,Integer)]
+  , stActiveNicks        :: ![(Text,Integer)]
   , stActivityByYear     :: ![(Integer,Integer)]
   , stConversationByYear :: ![(Integer,Integer)]
   } deriving Show
@@ -68,10 +47,9 @@ instance Default Stats where
 
 instance AppLiftModel Config PState where
   liftModel action = do
-    conn <- env controllerStateConn
     anns <- env controllerState
     conf <- env controllerStateConfig
-    let st = ModelState conn anns conf
+    let st = ModelState anns conf
     io $ runReaderT (runModel action) st
 
 data Range = Range
@@ -122,16 +100,3 @@ contexted name channel =
 
 showDay :: Day -> String
 showDay = formatTime defaultTimeLocale "%Y-%m-%d"
-
-data Event = Event
-  { eventId        :: !EventId
-  , eventTimestamp :: !ZonedTime
-  , eventNetwork   :: !Int
-  , eventChannel   :: !Int
-  , eventType      :: !Text
-  , eventNick      :: !(Maybe Text)
-  , eventText      :: !Text
-  } -- deriving (Show)
-
--- instance FromRow Event where
---   fromRow = Event <$> field <*> field <*> field <*> field <*> field <*> field <*> field

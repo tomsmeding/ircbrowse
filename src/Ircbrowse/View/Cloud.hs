@@ -12,8 +12,9 @@ import Control.Arrow
 import Data.Aeson
 import Data.Aeson.Text
 import Data.Text.Lazy.Builder
+import Data.Text (Text)
 
-cloud :: String -> (Int,Int) -> Int -> Int -> [(String,Integer)] -> Html
+cloud :: String -> (Int,Int) -> Int -> Int -> [(Text,Integer)] -> Html
 cloud elid (width,height) limit scale stats = do
   div !# toValue elid $ mempty
   script $ preEscapedToHtml $ "drawCloud(" <> toLazyText (encodeToTextBuilder (toJSON spec)) <> ")"
@@ -25,7 +26,7 @@ cloud elid (width,height) limit scale stats = do
                       ]
         words = map makeWord lstats
         lstats = map (second (\x -> round (log (fi x)) * fi scale)) stats
-        makeWord :: (String,Integer) -> Value
+        makeWord :: (Text,Integer) -> Value
         makeWord (text,size) = object ["text" .= text,"size" .= size]
 
 cloudScripts :: Html

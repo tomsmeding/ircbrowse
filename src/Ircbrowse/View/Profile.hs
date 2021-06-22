@@ -57,7 +57,7 @@ profileSections nick showrecent ns@NickStats{..} =
           else span5 $ do
                  h2 "Active Years (by line)"
                  p $ do
-                   barChartBy (420,200) (map (\(year,_,_,_,lines) -> (show year,lines)) nickYears)
+                   barChartBy (420,200) (map (\(year,_,_,lines) -> (show year,lines)) nickYears)
 
      row $ do
        span7 $ do
@@ -69,7 +69,7 @@ profileSections nick showrecent ns@NickStats{..} =
          span5 $ do
            h2 "Active Years (by words)"
            p $ do
-             barChartBy (420,200) (map (\(year,_,_,words,_) -> (show year,words)) nickYears)
+             barChartBy (420,200) (map (\(year,_,words,_) -> (show year,words)) nickYears)
 
      unless showrecent $
        row $ do
@@ -116,8 +116,8 @@ summary nick showrecent NickStats{..} = do
          ":00 (UTC)."
   p $ do toHtml nick; " has a karma of "; toHtml (show nickKarma)
 
-  where nickWords = sum (map (\(_,_,_,sum,_) -> sum) nickYears)
-        nickAvg   = round (fromIntegral (sum (map (\(_,avg,_,_,_) -> avg) nickYears)) /
+  where nickWords = sum (map (\(_,_,sum,_) -> sum) nickYears)
+        nickAvg   = round (fromIntegral (sum (map (\(_,avg,_,_) -> avg) nickYears)) /
                            fromIntegral (length nickYears))
 
 maximumBy'

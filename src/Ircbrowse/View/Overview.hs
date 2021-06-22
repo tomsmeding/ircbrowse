@@ -15,7 +15,7 @@ import Ircbrowse.View.Cloud
 import Ircbrowse.View.Template
 
 import Control.Arrow
-import Data.Text (pack)
+import Data.Text (Text, pack)
 
 overview :: Html
 overview =
@@ -90,13 +90,13 @@ activeNicks channel stats = do
       forM_ (zip [1..] (take limit (stActiveNicks stats))) $ \(i,(nick,linecount)) ->
         tr $ do
           td $ toHtml (show i)
-          td $ a ! href (toValue ("/nick/" ++ nick)) $ toHtml nick
+          td $ a ! href (toValue (pack "/nick/" <> nick)) $ toHtml nick
           td $ toHtml (showCount linecount)
   p $ a ! href (toValue ("/nicks/" ++ showChan channel)) $ "See all nicks →"
 
   where limit = 10
 
-nickCloud :: Channel -> [(String,Integer)] -> Html
+nickCloud :: Channel -> [(Text,Integer)] -> Html
 nickCloud channel stats = do
   h2 "Nicks Word Cloud"
   cloud "overview-nicks-container" (400,400) 100 3 stats

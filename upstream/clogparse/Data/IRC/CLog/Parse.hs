@@ -1,5 +1,3 @@
-{-# LANGUAGE PatternGuards #-}
-
 -- | Parse events from @clog@ output, such as the files
 -- at <http://tunes.org/~nef/logs/haskell/>.
 --

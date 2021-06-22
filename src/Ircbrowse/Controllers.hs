@@ -96,7 +96,7 @@ nickProfile = do
   recent <- getBoolean "recent" True
   range <- getRange
   viewCached (Profile nick recent) $ do
-    hours <- model $ activeHours nick recent range
+    hours <- model $ activeHours nick (if recent then Just range else Nothing)
     return $ V.nickProfile nick recent hours
 
 allNicks :: Controller Config PState ()
@@ -199,7 +199,6 @@ paginatedPdfs = do
 
 quotes :: Controller Config PState ()
 quotes = do
-  return ()
   qs <- model $ getRecentQuotes 30
   outputRSS "IRCBrowse Quotes"
             "https://ircbrowse.tomsmeding.com/quotes.rss"
@@ -208,11 +207,9 @@ quotes = do
 
   where makeLink eid t =
           concat ["https://ircbrowse.tomsmeding.com/browse/haskell?id="
-                 ,show eid
-                 ,"&timestamp="
-                 ,secs
-                 ,"#t"
-                 ,secs]
+                 ,serialiseEventId eid
+                 ,"#trid"
+                 ,serialiseEventId eid]
          where secs = formatTime defaultTimeLocale "%s" t
 
 perfStats :: Controller Config PState ()
@@ -244,11 +241,6 @@ getChannelMaybe :: Controller c s (Maybe Channel)
 getChannelMaybe = do
   chan <- getStringMaybe "channel"
   return $ chan >>= parseChan
-
-getTimestamp :: Controller c s (Maybe UTCTime)
-getTimestamp = do
-  string <- getStringMaybe "timestamp"
-  return $ string >>= parseTimeM True defaultTimeLocale "%s"
 
 getSearchText :: ByteString -> Controller c s (Maybe Text)
 getSearchText key = do

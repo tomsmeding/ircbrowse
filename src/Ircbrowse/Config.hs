@@ -1,21 +1,48 @@
 -- | Load the configuration file.
 
-module Ircbrowse.Config (getConfig) where
+module Ircbrowse.Config (
+  Config(..),
+  configLogDirFor,
+  getConfig,
+) where
 
-import Ircbrowse.Types
-import Ircbrowse.Types.Import (showNetwork)
+import Ircbrowse.Types.Import (Network, showNetwork)
 
 import Control.Monad (when)
 import Data.ConfigFile
 import Data.List (intercalate, sort, (\\))
 import qualified Data.Text as T
 import Network.Mail.Mime
+import Snap.App.Cache (CacheDir(..))
+import Snap.App.Types (AppConfig(..))
 import System.Exit (die)
+
+
+-- | Site-wide configuration.
+data Config = Config
+  { configDomain          :: !String
+  , configAdmin           :: !Address
+  , configSiteAddy        :: !Address
+  , configCacheDir        :: !FilePath
+  , configLogDirs         :: ![(String, FilePath)]
+  }
+
+configLogDirFor :: Config -> Network -> FilePath
+configLogDirFor cfg netw =
+    case lookup (showNetwork netw) (configLogDirs cfg) of
+      Just fp -> fp
+      Nothing -> error ("No irc log directory specified in config for network " ++ showNetwork netw)
+
+instance AppConfig Config where
+  getConfigDomain = configDomain
+
+instance CacheDir Config where
+  getCacheDir = configCacheDir
 
 getConfig :: FilePath -> IO Config
 getConfig conf = do
   contents <- readFile conf
-  let config = do
+  let econfig = do
         c <- readstring emptyCP contents
         domain <- get c "WEB" "domain"
         cache  <- get c "WEB" "cache"
@@ -30,7 +57,7 @@ getConfig conf = do
          , configCacheDir = cache
          , configLogDirs = logdirs
          }
-  case config of
+  case econfig of
     Left cperr -> error $ show cperr
     Right config -> do
       let providedNetworks = sort (map fst (configLogDirs config))

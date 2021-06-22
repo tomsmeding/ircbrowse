@@ -4,23 +4,27 @@
 module Data.IRC.Provider (
     module Data.IRC.EventId,
     Provider,
+    ProviderStats(..),
     makeProvider,
     eventAtOffset,
     eventsFromOffset,
     eventsOnDay,
     eventsWithIds,
-    numChannelEvents,
+    providerStats,
 ) where
 
 import qualified Data.IRC.Event as Clog
 import Data.IRC.EventId
 import qualified Data.IRC.Znc.Parse as P
-import Ircbrowse.Types
+import Ircbrowse.Config
+import Ircbrowse.Event
 import Ircbrowse.Types.Import
 
 import Control.Arrow ((***))
 import Control.DeepSeq (force)
 import Control.Monad (forM)
+import qualified Control.Monad.State.Strict as State
+import Control.Monad.IO.Class (liftIO)
 import Data.Char (toLower)
 import Data.List (find, sortBy, groupBy)
 import qualified Data.Map.Strict as Map
@@ -44,21 +48,24 @@ data ProviderInfo = ProviderInfo
     , priConfig :: Config
     }
 
-data ProviderStatsPer = ProviderStatsPer
-    { spTotalEvents :: Integer
-    }
-
-data ProviderStats = ProviderStats
-    { sPerChan :: Map Channel ProviderStatsPer
-    }
-
-data Provider = Provider
+data Provider s = Provider
     { prInfo :: ProviderInfo
     , prOrderIndex :: Map Channel [(EventId, Integer)]  -- (eventid, offset) where offset is one-based
-    , prStats :: ProviderStats
+    , prStats :: s
     }
 
-makeProvider :: Config -> IO Provider
+class ProviderStats s where
+    statsEmpty :: s
+
+    -- | The event will be later than the events previously added to the stats.
+    statsAdd :: Event -> s -> s
+
+    -- | The batch of events will be chronological and all later than the
+    -- events previously added to the stats. They will all be in a single
+    -- channel.
+    statsAddBatch :: [Event] -> s -> s
+
+makeProvider :: ProviderStats s => Config -> IO (Provider s)
 makeProvider config = do
     let P.Config {P.timeZone = timeZone, P.zoneInfo = zoneInfo} = P.ircbrowseConfig
     tzdir <- fromMaybe zoneInfo <$> Env.lookupEnv "TZDIR"
@@ -71,18 +78,23 @@ makeProvider config = do
     scanResult <- initScanLogs prc
     return $ Provider
         { prInfo = prc
-        , prOrderIndex = Map.map fst scanResult
-        , prStats = ProviderStats { sPerChan = Map.map snd scanResult } }
+        , prOrderIndex = fst scanResult
+        , prStats = snd scanResult }
 
-initScanLogs :: ProviderInfo -> IO (Map Channel ([(EventId, Integer)], ProviderStatsPer))
-initScanLogs info = do
-    fmap Map.fromList . forM [toEnum 0 ..] $ \channel -> do
-        putStrLn $ "Indexing logs for " ++ prettyChanWithNetwork channel ++ "..."
+-- This is in IO to prepare for the future situation, when Provider will have its contents in a mutex
+providerStats :: Provider s -> IO s
+providerStats provider = return (prStats provider)
 
-        files <- logFilesForChannel (priConfig info) channel
+initScanLogs :: ProviderStats s => ProviderInfo -> IO (Map Channel [(EventId, Integer)], s)
+initScanLogs info =
+    flip State.runStateT statsEmpty $ fmap Map.fromList . forM [toEnum 0 ..] $ \channel -> do
+        liftIO $ putStrLn $ "Indexing logs for " ++ prettyChanWithNetwork channel ++ "..."
+
+        files <- liftIO $ logFilesForChannel (priConfig info) channel
         -- Collect the first event id on each day (if any) together with the number of events on that day
         days <- sequence
-            [do events <- readLogFile info fname (\_ _ -> True) channel day
+            [do events <- liftIO $ readLogFile info fname (\_ _ -> True) channel day
+                State.modify' (statsAddBatch events)
                 return (eventId <$> safeHead events, fromIntegral (length events) :: Integer)
             | (fname, day) <- sortBy (comparing snd) files]
         -- Compute the offsets of each of those first events
@@ -90,9 +102,7 @@ initScanLogs info = do
         -- Zip those together with the event ids themselves to get the final index entries
         let index = catMaybes (zipWith (\(meid, _) off -> (,off) <$> meid) days offsets)
 
-        let stats = ProviderStatsPer { spTotalEvents = sum (map snd days) }
-
-        force index `seq` return (channel, (index, stats))
+        force index `seq` return (channel, index)
 
 -- Returns full file path for each log file, together with the day it represents. List is sorted on the day.
 logFilesForChannel :: Config -> Channel -> IO [(FilePath, Time.Day)]
@@ -119,7 +129,7 @@ dayToYMD :: Time.Day -> String
 dayToYMD = Time.formatTime Time.defaultTimeLocale "%Y-%m-%d"
 
 -- The first element in the log has index 1.
-eventAtOffset :: Provider -> Channel -> Integer -> IO (Maybe Event)
+eventAtOffset :: ProviderStats s => Provider s -> Channel -> Integer -> IO (Maybe Event)
 eventAtOffset provider channel offset =
     fmap (head . snd) <$> eventIdsOnDayFromOffset provider channel offset
 
@@ -127,7 +137,7 @@ eventAtOffset provider channel offset =
 -- offset, a smaller list will be returned containing only the events that do
 -- exist. If the offset is out of range, 'Nothing' is returned.
 -- The first element in the log has index 1.
-eventsFromOffset :: Provider -> Channel -> Integer -> Integer -> IO (Maybe [Event])
+eventsFromOffset :: ProviderStats s => Provider s -> Channel -> Integer -> Integer -> IO (Maybe [Event])
 eventsFromOffset provider channel offset count =
     eventIdsOnDayFromOffset provider channel offset >>= \case
       Nothing -> return Nothing
@@ -135,14 +145,14 @@ eventsFromOffset provider channel offset count =
         let num = fromIntegral (length remaining) :: Integer
         if num >= count
             then return (Just (take (fromIntegral count) remaining))
-            else (Just . (remaining ++) . fromMaybe []) <$>
+            else Just . (remaining ++) . fromMaybe [] <$>
                      eventsFromOffset provider channel (offset + num) (count - num)
 
 -- Finds the day containing the event with the given offset, if it exists.
 -- Returns the corresponding day and the remaining list of events on that day,
 -- starting at and including the one indicated.
 -- The first element in the log has index 1.
-eventIdsOnDayFromOffset :: Provider -> Channel -> Integer -> IO (Maybe (Time.Day, [Event]))
+eventIdsOnDayFromOffset :: ProviderStats s => Provider s -> Channel -> Integer -> IO (Maybe (Time.Day, [Event]))
 eventIdsOnDayFromOffset provider channel offset = do
     let offsetIndex = fromMaybe [] (Map.lookup channel (prOrderIndex provider))
 
@@ -208,17 +218,13 @@ eventIdsOnDayFromOffset provider channel offset = do
 
 -- Get all events on a given day in the given channel. The function argument
 -- decides whether a particular event needs to be included in the result.
-eventsOnDay :: Provider -> (Time.UTCTime -> Event -> Bool) -> Channel -> Time.Day -> IO [Event]
+eventsOnDay :: ProviderStats s => Provider s -> (Time.UTCTime -> Event -> Bool) -> Channel -> Time.Day -> IO [Event]
 eventsOnDay (prInfo -> info) predicate channel day = do
     let filename = logFileName (priConfig info) channel day
     exists <- doesFileExist filename
     if exists
         then readLogFile info filename predicate channel day
         else return []
-
-numChannelEvents :: Provider -> Channel -> IO Integer
-numChannelEvents provider channel =
-    return (maybe 0 spTotalEvents (Map.lookup channel (sPerChan (prStats provider))))
 
 -- Assumes the file exists and contains events for the given channel on the given day.
 readLogFile :: ProviderInfo -> FilePath -> (Time.UTCTime -> Event -> Bool) -> Channel -> Time.Day -> IO [Event]
@@ -240,8 +246,7 @@ readLogFile info filename predicate channel day = do
                        Time.utcToZonedTime
                             (Zone.timeZoneFromSeries (priTZSeries info) utc)
                             utc
-                   , eventNetwork = 1
-                   , eventChannel = showChanInt channel
+                   , eventChannel = channel
                    , eventType = T.pack (map toLower (show typ))
                    , eventNick = (\(Clog.Nick n) -> n) <$> mnick
                    , eventText = T.concat texts }
@@ -249,7 +254,7 @@ readLogFile info filename predicate channel day = do
 
 -- Look up the events in the given list. Invalid or nonexistent event ids will
 -- produce Nothing in the result.
-eventsWithIds :: Provider -> [EventId] -> IO [Maybe Event]
+eventsWithIds :: ProviderStats s => Provider s -> [EventId] -> IO [Maybe Event]
 eventsWithIds provider ids = do
     let groups :: [((Channel, DayCode), [(Int, EventId)])]
         groups = map ((,) <$> fst . head <*> map snd)

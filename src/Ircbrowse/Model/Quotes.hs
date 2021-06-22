@@ -10,7 +10,7 @@ import Ircbrowse.Types.Import
 
 import Control.Monad.IO.Class
 import Control.Monad.Reader.Class
-import Data.Text (Text)
+import Data.Text (Text, pack)
 import Data.Time
 import Snap.App
 
@@ -20,8 +20,9 @@ getRecentQuotes n = do
   provider <- reader (stateProvider . modelStateAnns)
   stats <- liftIO $ providerStats provider
   let evs = sdpRemembers (mget statDataPerEmpty LcHaskell (sdPerChan stats))
-  return [(eventId ev, zonedTimeToUTC (eventTimestamp ev), eventText ev)
-         | ev <- reverse (take n evs)]
+  return [(eventId ev, zonedTimeToUTC (eventTimestamp ev), nick <> pack " " <> quote)
+         | ev <- take n evs
+         , Just (nick, quote) <- [parseRemember (eventText ev)]]
   -- query ["SELECT index.id,timestamp,REGEXP_REPLACE(text,'^@remember ([^ ]+)',E'<\\\\1>')"
   --       ,"FROM event, event_order_index index"
   --       ,"WHERE"

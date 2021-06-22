@@ -58,6 +58,7 @@ executable ircbrowse
                      deepseq
   other-modules:
     Control.Monad.IO
+    -- Data.List.Reverse
     Data.IRC.EventId
     Data.IRC.Provider
     Data.IRC.Znc.Parse
@@ -69,6 +70,7 @@ executable ircbrowse
     Ircbrowse.Event
     -- Ircbrowse.Import
     Ircbrowse.Model.Data
+    Ircbrowse.Model.Data.Recent
     Ircbrowse.Model.Events
     -- Ircbrowse.Model.Migrations
     Ircbrowse.Model.Nicks

@@ -105,8 +105,8 @@ allNicks = do
   range <- getRange
   channel <- getChannel
   viewCached (AllNicks channel mode) $ do
-    nicks <- model $ getNicks channel 100 (mode == "recent") range
-    count <- model $ getNickCount channel (mode == "recent") range
+    nicks <- model $ getNicks channel 100 (mode == "recent")
+    count <- model $ getNickCount channel (mode == "recent")
     return $ V.nicks channel count nicks mode
 
 -- socialGraph :: Controller Config PState ()

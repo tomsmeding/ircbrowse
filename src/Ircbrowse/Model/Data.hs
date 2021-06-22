@@ -1,18 +1,20 @@
+{-# LANGUAGE MultiWayIf #-}
 {-# LANGUAGE OverloadedStrings #-}
 -- {-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
 
 module Ircbrowse.Model.Data (
     StatData(..),
     StatDataPer(..),
-    NickActivity(..),
     Activity(..),
     sdpTalksPerDay,
     statDataPerEmpty,
     mget,
+    parseRemember,
 ) where
 
 import Data.IRC.Provider
 import Ircbrowse.Event
+import Ircbrowse.Model.Data.Recent
 -- import Ircbrowse.Monads
 import Ircbrowse.Types.Import
 
@@ -54,21 +56,22 @@ data Activity = Activity
     , actNumWords :: Int
     }
 
-data NickActivity = NickActivity
-    { -- | Grouped by hour-of-day, the nick's global activity
-      naHourActivity :: Map Int Activity
-    , -- | Grouped by year, the nick's global activity
-      naYearActivity :: Map Integer Activity
-    , -- | Quotes of this nick ({talk,act} messages matching
-      -- /^@remember ([^ ]+) (.*)/ with \1 = nick; \2 is the quote)
-      naQuotes :: [Text]
-    }
-
 data StatData = StatData
     { -- | Per-channel statistics
       sdPerChan :: Map Channel StatDataPer
-    , -- | Per day, per nick, its activity
-      sdNickActivity :: Map Day (Map Text NickActivity)
+    , -- | Per nick, aggregated per hour, its recent activity
+      sdNickHourActivity :: Map Text (Map Int (Recent Activity))
+    , -- | Per nick, aggregated per year, its activity
+      sdNickYearActivity :: Map Text (Map Integer Activity)
+    , -- | Per channel, its recent activity per nick
+      sdChannelNickActivity :: Map Channel (Map Text (Recent Activity))
+    , -- | Quotes per day per nick ({talk,act} messages matching
+      -- /^@remember ([^ ]+) (.*)/ with \1 = nick; \2 is the quote); ordered
+      -- reverse-chronologically (newest first).
+      sdQuotes :: Map Text [Event]
+    , -- | Karma of each nick (incremented by ++nick messages, decremented by
+      -- nick messages)
+      sdKarma :: Map Text Integer
     }
 
 instance Semigroup Activity where
@@ -76,16 +79,14 @@ instance Semigroup Activity where
 instance Monoid Activity where
     mempty = Activity 0 0
 
-instance Semigroup NickActivity where
-    NickActivity a b c <> NickActivity a' b' c' =
-        NickActivity (Map.unionWith (<>) a a') (Map.unionWith (<>) b b') (c ++ c')
-instance Monoid NickActivity where
-    mempty = NickActivity mempty mempty []
-
 instance ProviderStats StatData where
     statsEmpty = StatData
         { sdPerChan = mempty
-        , sdNickActivity = mempty
+        , sdNickHourActivity = mempty
+        , sdNickYearActivity = mempty
+        , sdChannelNickActivity = mempty
+        , sdQuotes = mempty
+        , sdKarma = mempty
         }
 
     -- TODO: optimise for batch indexing
@@ -93,15 +94,37 @@ instance ProviderStats StatData where
 
     statsAdd e st =
         st { sdPerChan = upsert (eventChannel e) statDataPerEmpty (statsPerAdd e) (sdPerChan st)
-           , sdNickActivity =
-                let utc = zonedTimeToUTC (eventTimestamp e)
-                    day = utctDay utc
-                in case eventNick e of
-                     Just nick
-                       | eventType e == "talk" || eventType e == "act"
-                       -> upsert day mempty (upsert nick mempty (nickActivityAdd e)) (sdNickActivity st)
-                     _ -> sdNickActivity st
+           , sdNickHourActivity =
+                withNickTalkAct (\nick -> upsert nick mempty (upsert hour recentEmpty (recentAddNew day (eventActivity e)))) (sdNickHourActivity st)
+           , sdNickYearActivity =
+                withNickTalkAct (\nick -> upsert nick mempty (upsert year mempty (<> eventActivity e))) (sdNickYearActivity st)
+           , sdChannelNickActivity =
+                withNickTalkAct (\nick -> upsert (eventChannel e) mempty (upsert nick recentEmpty (recentAddNew day (eventActivity e)))) (sdChannelNickActivity st)
+           , sdQuotes =
+               if eventType e == "talk" || eventType e == "act"
+                   then case parseRemember (eventText e) of
+                          Just (nick, _) ->
+                              upsert nick [] (e :) (sdQuotes st)
+                          _ -> sdQuotes st
+                   else sdQuotes st
+           , sdKarma =
+               if | Just nick <- T.stripPrefix "++" (eventText e) -> upsert nick 0 succ (sdKarma st)
+                  | Just nick <- T.stripPrefix "--" (eventText e) -> upsert nick 0 pred (sdKarma st)
+                  | otherwise -> sdKarma st
            }
+      where
+        utc = zonedTimeToUTC (eventTimestamp e)
+        day = utctDay utc
+        (year, _, _) = toGregorian day
+        hour = floor (realToFrac (utctDayTime utc) :: Double)
+
+        withNickTalkAct :: (Text -> a -> a) -> a -> a
+        withNickTalkAct f val
+          | Just nick <- eventNick e
+          , eventType e == "talk" || eventType e == "act"
+          = f nick val
+          | otherwise
+          = val
 
 statDataPerEmpty :: StatDataPer
 statDataPerEmpty = StatDataPer
@@ -126,7 +149,7 @@ statsPerAdd ev sdp =
                              then upsert day mempty (upsert hour 0 succ) (sdpHourTalks sdp)
                              else sdpHourTalks sdp
         , sdpRemembers = if (eventType ev == "talk" || eventType ev == "act")
-                                && eventText ev `startsWith` "@remember "
+                                && "@remember " `T.isPrefixOf` eventText ev
                              then ev : sdpRemembers sdp
                              else sdpRemembers sdp
         , sdpNickTalks = case eventNick ev of
@@ -140,55 +163,21 @@ statsPerAdd ev sdp =
     (year, _, _) = toGregorian day
     hour = floor (realToFrac (utctDayTime utc) :: Double)
 
--- | Assumes that the given event has type {talk,act}!
-nickActivityAdd :: Event -> NickActivity -> NickActivity
-nickActivityAdd ev na =
-    na { naHourActivity =
-             if isRealConvo
-                 then upsert hour mempty (activityAdd (eventText ev)) (naHourActivity na)
-                 else naHourActivity na
-       , naYearActivity =
-             if isRealConvo
-                 then upsert year mempty (activityAdd (eventText ev)) (naYearActivity na)
-                 else naYearActivity na
-       , naQuotes = TODO
--- define a "real conversation" message as one matching:
---   NOT (text ~ /^@|^> |^:t |^:k |^% /)
-
--- statistics:
---   per Day:
---     per nick:
---       grouped by hour-of-day:
---         - total number of real conversation messages
---         - total number of words in real conversation messages
---       grouped by year:
---         - total number of real conversation messages
---         - total number of words in real conversation messages
---       list of {talk,act} messages matching /^@remember ([^ ]+) (.*)/ where \1 = nick; value stored is \2
---   per nick:
---     integer karma
-       }
-  where
-    utc = zonedTimeToUTC (eventTimestamp ev)
-    day = utctDay utc
-    (year, _, _) = toGregorian day
-    hour = floor (realToFrac (utctDayTime utc) :: Double)
-
-    isRealConvo = not (any (eventText ev `startsWith`) ["@", "> ", ":t ", ":k ", "% "])
-
-    activityAdd :: Text -> Activity -> Activity
-    activityAdd text act =
-        act { actNumMsg = actNumMsg act + 1
-            , actNumWords = actNumWords act + length (T.words text) }
-
-startsWith :: Text -> Text -> Bool
-startsWith long short = T.take (T.length short) long == short
+eventActivity :: Event -> Activity
+eventActivity ev =
+    Activity { actNumMsg = 1
+             , actNumWords = length (T.words (eventText ev))}
 
 upsert :: Ord k => k -> v -> (v -> v) -> Map k v -> Map k v
 upsert k emptyv vf m = Map.insert k (vf (fromMaybe emptyv (Map.lookup k m))) m
 
 mget :: Ord k => v -> k -> Map k v -> v
 mget v k = fromMaybe v . Map.lookup k
+
+parseRemember :: Text -> Maybe (Text, Text)
+parseRemember line = do
+  suf <- T.stripPrefix "@remember " line
+  return (fmap (T.dropWhile (== ' ')) (T.breakOn " " suf))
 
 -- TODO: Migrate this to new logs reading model
 -- | Generate everything.

@@ -3,6 +3,7 @@ module Ircbrowse.Model.Events where
 import Data.IRC.Provider
 -- import Database.PostgreSQL.Simple.FromRow
 import Ircbrowse.Data
+import Ircbrowse.Event
 import Ircbrowse.Monads
 import Ircbrowse.Types
 import Ircbrowse.Types.Import
@@ -138,6 +139,7 @@ getPaginatedEvents channel pagination = do
 
 getPaginatedPdfs :: Channel -> PN -> Model c PState (Pagination,[Event])
 getPaginatedPdfs _channel (PN _ pagination _) = do
+  TODO: Support PDFs
   liftIO $ putStrLn "ERROR: PDFS NOT SUPPORTED YET"
   return (pagination { pnTotal = 0 }, [])
   -- count <- single ["SELECT COUNT(*) FROM event_order_index WHERE idx = ?"]

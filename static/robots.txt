@@ -1,3 +1,10 @@
 User-agent: *
+Allow: /day/*
 Disallow: /*?id=
 Disallow: /nick/*
+Disallow: /nicks/*
+Disallow: /browse/*
+Disallow: /pdfs/*
+Disallow: /stats/*
+Disallow: /selection/*
+Disallow: /perfstats/*

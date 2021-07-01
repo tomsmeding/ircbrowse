@@ -1,6 +1,6 @@
 User-agent: *
-Allow: /day/*
 Disallow: /*?id=
+Allow: /day/*
 Disallow: /nick/*
 Disallow: /nicks/*
 Disallow: /browse/*

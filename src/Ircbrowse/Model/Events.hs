@@ -4,10 +4,12 @@ import Data.IRC.Provider
 -- import Database.PostgreSQL.Simple.FromRow
 import Ircbrowse.Data
 import Ircbrowse.Event
+import Ircbrowse.Model.Data
 import Ircbrowse.Monads
 import Ircbrowse.Types
 import Ircbrowse.Types.Import
 
+import qualified Data.Map.Strict as Map
 import Data.Text (Text)
 import Snap.App
 -- import Sphinx
@@ -37,16 +39,20 @@ getEvents channel tid (PN _ pagination _) _q = do
         Nothing -> getPaginatedEvents channel pagination
         Just t -> getTimestampedEvents channel t pagination
 
-getFirstEventDate :: Channel -> Model c s Day
+getFirstEventDate :: Channel -> Model c PState Day
 getFirstEventDate channel = do
+  provider <- reader (stateProvider . modelStateAnns)
   today <- fmap utctDay (io getCurrentTime)
-  fmap (maybe today utctDay)
-       (single ["SELECT timestamp"
-               ,"FROM event"
-               ,"WHERE channel = ?"
-               ,"ORDER BY timestamp"
-               ,"ASC LIMIT 1"]
-               (Only (showChanInt channel)))
+  liftIO $
+      fmap (maybe today (utctDay . zonedTimeToUTC . eventTimestamp))
+           (eventAtOffset provider channel 1)
+  -- fmap (maybe today utctDay)
+  --      (single ["SELECT timestamp"
+  --              ,"FROM event"
+  --              ,"WHERE channel = ?"
+  --              ,"ORDER BY timestamp"
+  --              ,"ASC LIMIT 1"]
+  --              (Only (showChanInt channel)))
 
 getEventsByOrderIds :: [EventId] -> Model c PState [Event]
 getEventsByOrderIds eids = do
@@ -123,7 +129,7 @@ getPaginatedEvents channel pagination = do
   let offset = 1 + max 0 (pnCurrentPage pagination - 1) * pnPerPage pagination
       limit = pnPerPage pagination
   provider <- reader (stateProvider . modelStateAnns)
-  count <- liftIO $ numChannelEvents provider channel
+  count <- liftIO $ maybe 0 sdpTotalEvents . Map.lookup channel . sdPerChan <$> providerStats provider
   events <- liftIO $ fromMaybe [] <$> eventsFromOffset provider channel offset limit
   -- count <- single ["SELECT count FROM event_count where channel = ?"] (Only (showChanInt channel))
   -- events <- query ["SELECT idx.id,e.timestamp,e.network,e.channel,e.type,e.nick,e.text FROM event e,"

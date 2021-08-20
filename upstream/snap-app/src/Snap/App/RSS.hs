@@ -2,6 +2,7 @@
 
 module Snap.App.RSS where
 
+import qualified Data.ByteString.Char8 as BS8
 import           Data.Text (Text)
 import qualified Data.Text as T
 import           Data.Time
@@ -14,7 +15,8 @@ import           Text.RSS.Syntax
 outputRSS :: Text -> Text -> [(UTCTime,Text,Text,Text)] -> Controller c s ()
 outputRSS title link items =
     case textFeed (makeFeed title link items) of
-        Just res -> writeLazyText res
+        Just res -> do modifyResponse (setContentType (BS8.pack "application/rss+xml"))
+                       writeLazyText res
         Nothing -> do modifyResponse (setResponseCode 500)
                       writeText (T.pack "Error building RSS feed")
 

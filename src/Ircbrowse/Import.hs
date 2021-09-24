@@ -216,8 +216,11 @@ importEvents :: Channel -> [EventAt] -> Model c s ()
 importEvents channel events = do
    forM_ (nub events) $ \event ->
     case event of
-      EventAt time (decompose -> GenericEvent typ mnick texts) -> do
-        let text = T.concat texts
+      EventAt time baseevent@(decompose -> GenericEvent typ mnick texts) -> do
+        let text = case baseevent of
+                     Kick _ (Nick byuser) reason ->
+                         T.concat [byuser, T.pack " (", reason, T.pack ")"]
+                     _ -> T.concat texts
         exists <- fmap (==[Only True])
                        (query ["select true from event"
                               ,"where timestamp = ?"

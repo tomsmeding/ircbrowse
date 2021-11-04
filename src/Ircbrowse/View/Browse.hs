@@ -48,6 +48,8 @@ browser _search title' channel extra uri events pn q' =
     channelNav channel
     containerFluid $ do
       {-when search $ searchForm q'-}
+      p $ do
+        "Note: logging is currently temporary disabled pending amateur GDPR discussions. :)"
       when (not (networkIsActive (chanNetwork channel))) $
         p $ do
           "Note: This channel on "

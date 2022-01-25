@@ -6,6 +6,7 @@ import qualified Data.ByteString.Lazy as LBS
 import Data.Char
 import Data.List (tails)
 import qualified Data.Map.Strict as Map
+import Data.Map.Strict (Map)
 
 
 newtype Token = Token String
@@ -17,16 +18,14 @@ tokenLength = 4
 log10 :: Floating a => a -> a
 log10 x = log x / log 10
 
-validToken :: Token -> Bool
-validToken (Token s) = all (not . isSpace) s
-
-transformToken :: Token -> Token
-transformToken (Token s) = Token (map toLower s)
+data Trie a = Node (Map Char (Trie a)) | Leaf a
 
 tokenise :: String -> [Token]
-tokenise s =
-    let n = length s
-    in filter validToken $ map (transformToken . Token . take tokenLength) (take (n - tokenLength + 1) (tails s))
+tokenise input =
+    let n = length input
+    in filter valid $ map (Token . map toLower . take tokenLength) (take (n - tokenLength + 1) (tails input))
+  where
+    valid (Token s) = all (not . isSpace) s
 
 encodeIndexList :: [Int] -> LBS.ByteString
 encodeIndexList = BSB.toLazyByteString . foldMap encodeInt
@@ -46,5 +45,5 @@ main = do
     let tokens = Map.fromListWith (++) $
                     concatMap (\(i, s) -> map (,[i]) (tokenise s)) events
     -- mapM_ (\(_, lst) -> print (log10 (fromIntegral (length lst)) :: Double)) (Map.toList tokens)
-    -- mapM_ (\(Token s, _) -> putStrLn s) (filter ((> 1000) . length . snd) (Map.toList tokens))
-    print (sum . map LBS.length $ map (encodeIndexList . snd) (Map.toList tokens))
+    mapM_ (\(Token s, _) -> putStrLn s) (filter ((> 1000) . length . snd) (Map.toList tokens))
+    -- print (sum . map LBS.length $ map (encodeIndexList . snd) (Map.toList tokens))

@@ -24,6 +24,7 @@ import Control.Monad.Env
 import Control.Monad.Reader       (runReaderT)
 import Data.ByteString            (ByteString)
 import Data.ByteString.UTF8       (toString)
+import Data.Maybe                 (fromMaybe, isJust)
 import Data.String
 import Data.Pagination
 import Network.URI
@@ -64,11 +65,13 @@ goHome = redirect "/"
 justOrGoHome :: Maybe a -> (a -> Controller c s ()) -> Controller c s ()
 justOrGoHome x m = maybe goHome m x
 
--- | Get integer parmater.
+-- | Get integer parameter.
 getInteger :: ByteString -> Integer -> Controller c s Integer
-getInteger name def = do
-  pid <- (>>= readMay . toString) <$> getParam name
-  maybe (return def) return pid
+getInteger name def = getIntegerMaybe name >>= maybe (return def) return
+
+-- | Get integer parameter, if given.
+getIntegerMaybe :: ByteString -> Controller c s (Maybe Integer)
+getIntegerMaybe name = (>>= readMay . toString) <$> getParam name
 
 -- | Get string.
 getString :: ByteString -> String -> Controller c s String
@@ -82,19 +85,19 @@ getStringMaybe name = do
   pid <- (>>= return . toString) <$> getParam name
   return pid
 
--- | Get pagination data.
-getPagination :: AppConfig c => String -> Controller c s PN
+-- | Get pagination data, and a flag indicating whether an explicit page was set.
+getPagination :: AppConfig c => String -> Controller c s (PN, Bool)
 getPagination name = do
-  p <- getInteger (fromString (name ++ "_page")) 1
+  mp <- getIntegerMaybe (fromString (name ++ "_page"))
   limit <- getInteger (fromString (name ++ "_per_page")) 100
   uri <- getMyURI
-  let pag = Pagination { pnCurrentPage = max 1 p
+  let pag = Pagination { pnCurrentPage = max 1 (fromMaybe 1 mp)
                        , pnPerPage = max 1 (min 100 limit)
                        , pnTotal = 0
                        , pnName = name
                        , pnShowDesc = True
                        }
-  return (PN uri pag Nothing)
+  return (PN uri pag Nothing, isJust mp)
 
 getMyURI :: AppConfig c => Controller c s URI
 getMyURI = do

@@ -166,11 +166,14 @@ browse = do
   evid <- getIntegerMaybe "id"
   channel <- getChannel
   q <- getSearchText "q"
-  pn <- getPagination "events"
+  (pn,explicitPage) <- getPagination "events"
   let pn' = pn { pnResultsPerPage = Just [25,35,50,100] }
   (pagination,logs) <- model $ getEvents channel evid pn' q
+  -- Show the last page if no explicit page is given
+  let pagination' | explicitPage = pagination
+                  | otherwise = pagination { pnCurrentPage = pnPageCount pagination' }
   uri <- getMyURI
-  outputText $ renderHtml $ V.browse channel uri logs pn' { pnPn = pagination } q
+  outputText $ renderHtml $ V.browse channel uri logs pn' { pnPn = pagination' } q
 
 pdfs :: Controller Config PState ()
 pdfs = do
@@ -190,7 +193,7 @@ uniquePdfs = do
 paginatedPdfs :: Controller Config PState ()
 paginatedPdfs = do
   channel <- getChannel
-  pn <- getPagination "events"
+  (pn,_) <- getPagination "events"
   let pn' = pn { pnResultsPerPage = Just [25,35,50,100] }
   (pagination,logs) <- model $ getPaginatedPdfs channel pn'
   uri <- getMyURI

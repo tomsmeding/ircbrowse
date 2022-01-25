@@ -1,6 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE NoImplicitPrelude #-}
-{-# OPTIONS -fno-warn-unused-do-bind -fno-warn-type-defaults #-}
 
 -- | A social graph.
 
@@ -10,6 +9,7 @@ import Ircbrowse.View
 import Ircbrowse.View.Template
 
 import Data.Aeson
+import qualified Data.Aeson.Key as Key
 import Data.Aeson.Text
 import Data.Text (Text)
 import Data.Text.Lazy.Builder
@@ -33,7 +33,7 @@ socialGraph graph = do
                       ]
         makeNode label = object [ "label" .= label ]
         nodes = nub (map (\(x,_,_) -> x) limitedGraph ++ map (\(_,x,_) -> x) limitedGraph)
-        edges = object (map (\(n1,n2,weight) -> (n1 <> ":" <> n2) .= weight)
+        edges = object (map (\(n1,n2,weight) -> Key.fromText (n1 <> ":" <> n2) .= weight)
                             limitedGraph)
         limitedGraph = take limit graph
         limit = 100

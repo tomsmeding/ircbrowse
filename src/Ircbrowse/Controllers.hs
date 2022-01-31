@@ -168,12 +168,15 @@ browse = do
   q <- getSearchText "q"
   (pn,explicitPage) <- getPagination "events"
   let pn' = pn { pnResultsPerPage = Just [25,35,50,100] }
-  (pagination,logs) <- model $ getEvents channel evid pn' q
   -- Show the last page if no explicit page is given
-  let pagination' | explicitPage = pagination
-                  | otherwise = pagination { pnCurrentPage = pnPageCount pagination' }
+  pn'' <- if explicitPage
+            then return pn'
+            else do
+                lastpage <- model $ getEventsLastPageNumber channel pn'
+                return $ pn' { pnPn = (pnPn pn') { pnCurrentPage = lastpage } }
+  (pagination,logs) <- model $ getEvents channel evid pn'' q
   uri <- getMyURI
-  outputText $ renderHtml $ V.browse channel uri logs pn' { pnPn = pagination' } q
+  outputText $ renderHtml $ V.browse channel uri logs pn'' { pnPn = pagination } q
 
 pdfs :: Controller Config PState ()
 pdfs = do

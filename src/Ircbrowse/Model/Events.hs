@@ -130,6 +130,11 @@ getPaginatedEvents channel pagination = do
   where offset = 1 + (max 0 (pnCurrentPage pagination - 1) * pnPerPage pagination)
         limit = pnPerPage pagination
 
+getEventsLastPageNumber :: Channel -> PN -> Model c s Integer
+getEventsLastPageNumber channel (PN _ pagination _) = do
+  count <- single ["SELECT count FROM event_count where channel = ?"] (Only (showChanInt channel))
+  return (pnPageCount (pagination { pnTotal = fromMaybe 0 count }))
+
 getPaginatedPdfs :: FromRow r
                  => Channel -> PN -> Model c s (Pagination,[r])
 getPaginatedPdfs channel (PN _ pagination _) = do

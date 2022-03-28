@@ -1,4 +1,0 @@
-[submodule "upstream/snap-core"]
-	path = upstream/snap-core
-	url = https://github.com/tomsmeding/snap-core
-	branch = null-httptime

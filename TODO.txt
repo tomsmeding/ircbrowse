@@ -1,0 +1,44 @@
+Restructure db schema with the OFFSET evasion stuff to the following suggested by @lieuwex:
+
+-- The schema:
+CREATE TABLE event (
+   id integer primary key,
+   channel integer,
+   message integer,
+   seq_channel_id integer,
+);
+CREATE UNIQUE INDEX ON event(channel, seq_channel_id);
+
+CREATE TABLE channel_seqs (
+   channel integer primary key,
+   last_seq_channel_id integer,
+);
+
+-- Query:
+
+-- normally you would want:
+select * from event where channel=?1 offset ?2 limit ?3;
+-- now you do:
+select * from event where channel=?1 and seq_channel_id between (?2, ?2+?3);
+
+-- Insertion:
+-- normally you would want:
+insert into event (channel, message) values (?1, ?2);
+-- now you can do:
+BEGIN;
+   -- And then per event DO
+   insert into event (channel, message, seq_channel_id) values (?1, ?2, (select last_seq_channel_id from channel_seqs where channel = ?1));
+   update channel_seq set last_seq_channel_id=last_seq_channel_id+1 where channel=?1
+   -- OD
+COMMIT;
+-- now you want to do:
+CREATE FUNCTION() BEGIN
+   BEGIN;
+   	seq INTEGER := (select last_seq_channel_id from channel_seqs where channel = ?1);
+   	FOREACH event IN to_be_inserted_events LOOP
+   		insert into event (channel, message, seq_channel_id) values (?1, ?2, seq);
+   		seq = seq + 1;
+   	END LOOP;
+   	update channel_seq set last_seq_channel_id=seq where channel=?1
+   COMMIT;
+END;

@@ -25,7 +25,7 @@ overview =
         span12 $ do
           h1 "IRC Browse"
           p "Logs for some selected IRC channels."
-          forM_ [toEnum 0 ..] $ \netw -> do
+          forM_ (sortBy networkDisplayOrder [toEnum 0 ..]) $ \netw -> do
             h2 $ toHtml (showNetwork netw)
             forM_ (channelsForNetwork netw) $ \chan ->
               h3 $
@@ -113,3 +113,8 @@ conversationByYear stats = do
   h2 "Conversation by Year"
   p "Number of lines of conversation year."
   barChart (map (first show) (stConversationByYear stats))
+
+networkDisplayOrder :: Network -> Network -> Ordering
+networkDisplayOrder = comparing $ \n -> case n of
+  Freenode -> (1, 0)
+  _ -> (0, fromEnum n)

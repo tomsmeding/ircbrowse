@@ -2,7 +2,7 @@
 
 module Ircbrowse.Types.Import (
     Channel(LcHaskell),
-    Network,
+    Network(Freenode),
     channelsForNetwork,
     showNetwork, networkIsActive,
     chanNetwork, prettyChan, prettyChanWithNetwork, showChan, showChanInt, parseChan, idxNum

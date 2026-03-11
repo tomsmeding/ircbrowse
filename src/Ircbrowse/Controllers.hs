@@ -15,6 +15,7 @@ import           Ircbrowse.Types
 import           Ircbrowse.Types.Import
 import qualified Ircbrowse.View.Browse as V
 import qualified Ircbrowse.View.Calendar as V
+import qualified Ircbrowse.View.Help as V
 import qualified Ircbrowse.View.NickCloud as V
 import qualified Ircbrowse.View.Nicks as V
 import qualified Ircbrowse.View.Overview as V
@@ -225,6 +226,9 @@ perfStats = do
   perfCtx <- reader (statePerfCtx . controllerState)
   current <- currentPerfStats perfCtx
   outputText $ renderHtml $ V.perfStats current
+
+helpDataDump :: Controller Config PState ()
+helpDataDump = outputText $ renderHtml V.helpDataDump
 
 --------------------------------------------------------------------------------
 -- Utilities

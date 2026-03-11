@@ -48,6 +48,7 @@ serve config state pool = route routes where
            ,("/selection/:channel",run C.browseSpecified)
            -- ,("/export/:filename",run C.export)
            ,("/perfstats",run C.perfStats)
+           ,("/help/data-dump",run C.helpDataDump)
            ,("/",run C.overview)
            ]
   run = runHandler state config pool

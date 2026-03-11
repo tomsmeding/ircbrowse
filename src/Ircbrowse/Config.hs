@@ -70,7 +70,7 @@ get (ParsedConfig mp) = \sec opt ->
         Nothing -> Left $ "Section '" ++ sec ++ "' not found in config file"
         Just mp' ->
           case Map.lookup opt mp' of
-            Nothing -> Left $ "Option '" ++ sec ++ "' not found in section '" ++
+            Nothing -> Left $ "Option '" ++ opt ++ "' not found in section '" ++
                               sec ++ "' in config file"
             Just res -> Right res
 
@@ -109,7 +109,7 @@ parseConfig = \input -> runExcept (execStateT (go "DEFAULT" (lines input)) (Pars
     scanContLines [] = ([], [])
     scanContLines ((c:cs) : lns)
       | c `elem` whitespace = first (cs:) (scanContLines lns)
-    scanContLines (_ : lns) = ([], lns)
+    scanContLines lns = ([], lns)
 
     add :: String -> String -> String -> StateT ParsedConfig (Except String) ()
     add sec opt val = modify $ \(ParsedConfig mp) -> ParsedConfig $

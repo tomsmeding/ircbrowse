@@ -66,6 +66,8 @@ footer =
         a ! href "https://github.com/tomsmeding/ircbrowse" $ "Source code"
         " | "
         a ! href "https://www.haskell.org/" $ "Haskell"
+        " | "
+        a ! href "/help/data-dump" $ "Data dump"
 
 mainHeading :: Html -> Html
 mainHeading inner = h1 $ do

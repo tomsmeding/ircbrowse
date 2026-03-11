@@ -82,6 +82,7 @@ executable ircbrowse
     Ircbrowse.View.Calendar
     Ircbrowse.View.Chart
     Ircbrowse.View.Cloud
+    Ircbrowse.View.Help
     Ircbrowse.View.NickCloud
     Ircbrowse.View.NickColour
     Ircbrowse.View.Nicks

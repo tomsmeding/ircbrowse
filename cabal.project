@@ -1,2 +1,2 @@
 packages: . upstream/clogparse upstream/snap-app
-with-compiler: ghc-9.4.8
+with-compiler: ghc-9.8.4

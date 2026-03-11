@@ -10,7 +10,7 @@ import           Ircbrowse.View.Template
 import Data.ByteString (ByteString)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
-import Data.Semigroup (getMin, getMax)
+import Data.Semigroup (getMin, getMax, getSum)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as Enc
 import qualified Data.Text.Encoding.Error as Enc

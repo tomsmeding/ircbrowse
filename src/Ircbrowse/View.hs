@@ -6,7 +6,7 @@ module Ircbrowse.View
   ,module Ircbrowse.Types)
     where
 
-import Ircbrowse.Blaze
+import Ircbrowse.Blaze hiding ((!?))
 import Ircbrowse.Data
 import Ircbrowse.Monads
 import Ircbrowse.Prelude

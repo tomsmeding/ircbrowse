@@ -11,6 +11,7 @@ module Snap.App.Cache
   ,CacheDir(..))
   where
 
+import           Control.Monad
 import           Control.Monad.Reader
 import           Data.Text.Lazy           (Text)
 import qualified Data.Text.Lazy.IO as T

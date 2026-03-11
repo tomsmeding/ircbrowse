@@ -32,7 +32,6 @@ executable ircbrowse
                      mime-mail,
                      text,
                      postgresql-simple,
-                     ConfigFile,
                      mtl,
                      network-uri,
                      directory,

@@ -5,11 +5,11 @@
 module Ircbrowse.Model.Profile (activeHours, NickStats(..)) where
 
 import Ircbrowse.Data
-import Ircbrowse.PerfStats (wrapTimedFunc')
+-- import Ircbrowse.PerfStats (wrapTimedFunc')
 import Ircbrowse.Types
 import Ircbrowse.Types.Import
 
-import Control.Monad.Reader (asks)
+-- import Control.Monad.Reader (asks)
 import Data.Text (Text)
 import Snap.App
 
@@ -23,7 +23,8 @@ data NickStats = NickStats
   }
 
 wrapTimed :: String -> Model c PState a -> Model c PState a
-wrapTimed key = wrapTimedFunc' key(asks (statePerfCtx . modelStateAnns)) 
+-- wrapTimed key = wrapTimedFunc' key(asks (statePerfCtx . modelStateAnns)) 
+wrapTimed _key = id
 
 activeHours :: Text -> Bool -> Range -> Model c PState NickStats
 activeHours nick recent range = wrapTimed "activeHours" (activeHours' nick recent range)

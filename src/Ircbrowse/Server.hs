@@ -19,8 +19,9 @@ runServer config pool = do
   setUnicodeLocale "en_US"
   perfctx <- newPerfContext
   let state = PState { statePerfCtx = perfctx }
-      rqPath rq = rqContextPath rq <> rqPathInfo rq  -- The URI, but then without the query
-  httpServe server (wrapTimedRoute perfctx (rqPath <$> getRequest) (serve config state pool))
+      -- rqPath rq = rqContextPath rq <> rqPathInfo rq  -- The URI, but then without the query
+  -- httpServe server (wrapTimedRoute perfctx (rqPath <$> getRequest) (serve config state pool))
+  httpServe server (serve config state pool)
 
   where server = setPort 10009 defaultConfig
 

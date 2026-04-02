@@ -33,7 +33,7 @@ data Config = Config
 -- | @'Config'@ value suitable for parsing @#haskell@ logs on Linux.
 ircbrowseConfig :: Config
 ircbrowseConfig = Config
-  { timeZone = "Europe/Berlin"
+  { timeZone = "UTC"
   , zoneInfo = "/usr/share/zoneinfo" }
 
 -- Many text encodings are used on IRC.

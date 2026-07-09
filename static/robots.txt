@@ -1,5 +1,5 @@
 User-agent: *
-Disallow: /*?id=
+Disallow: /*?id=*
 Allow: /day/*
 Disallow: /nick/*
 Disallow: /nicks/*
